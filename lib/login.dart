@@ -26,7 +26,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 1500),
     );
 
     _slideAnimation = Tween<Offset>(

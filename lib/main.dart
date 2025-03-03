@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_application_1/launch.dart';
 import 'firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
 import 'login.dart'; // Import your login page
-import 'launch.dart';
+
 
 void main() async {
   WidgetsFlutterBinding
@@ -18,6 +18,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -29,7 +30,14 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Bebas',
       ),
-      home: const LoginPage(),
+      initialRoute: '/', // Define the initial route
+      routes: {
+        '/': (context) => const LaunchPage(),
+        '/login': (context) => const LoginPage(), // Ensure LoginPage is imported
+      },
     );
   }
 }
+
+
+

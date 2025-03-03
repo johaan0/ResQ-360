@@ -74,6 +74,7 @@ flutter:
   #   - images/a_dot_ham.jpeg
  
       - assets/background.png
+      - assets/animations/background.json
   
 
   # An image asset can refer to one or more resolution-specific "variants", see
