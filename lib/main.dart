@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_application_1/launch.dart';
 import 'firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
 import 'login.dart'; // Import your login page
+import 'launch.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Ensures Flutter is initialized before Firebase
+  WidgetsFlutterBinding
+      .ensureInitialized(); // Ensures Flutter is initialized before Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

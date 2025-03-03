@@ -1,6 +1,9 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -18,6 +21,18 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  double _containerPosition = 1000;
+
+  @override
+  void initState() {
+    super.initState();
+    Timer(Duration(milliseconds: 100), () {
+      setState(() {
+        _containerPosition = 0;
+      });
+    });
+  }
+
   Future<void> _register() async {
     String name = _nameController.text.trim();
     String email = _emailController.text.trim();
@@ -32,24 +47,20 @@ class _RegistrationPageState extends State<RegistrationPage> {
     }
 
     try {
-      // Register user with Firebase Authentication
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Store user details in Firestore
       await _firestore.collection("users").doc(userCredential.user!.uid).set({
         "name": name,
         "email": email,
-        "password": password, // Ideally, do not store passwords in plain text
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Registration successful!")),
       );
-
-      // Navigate to login or home screen
+      
       Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -63,18 +74,26 @@ class _RegistrationPageState extends State<RegistrationPage> {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/background.png'),
-            fit: BoxFit.cover,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF833AB4), // Purple
+              Color(0xFFFD1D1D), // Red
+              Color(0xFFFCAF45), // Orange
+            ],
           ),
         ),
         child: Center(
           child: SingleChildScrollView(
-            child: Container(
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 500),
+              curve: Curves.easeOut,
+              transform: Matrix4.translationValues(0, _containerPosition, 0),
               width: MediaQuery.of(context).size.width * 0.9,
               padding: const EdgeInsets.all(24.0),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withOpacity(0.85),
                 borderRadius: BorderRadius.circular(16.0),
                 boxShadow: [
                   BoxShadow(
@@ -87,66 +106,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
+                  const Text(
                     'Create Account',
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Poppins',
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Color(0xFF673AB7),
                     ),
                   ),
                   const SizedBox(height: 24),
-                  TextField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: 'Full Name',
-                      labelStyle: const TextStyle(fontFamily: 'Poppins'),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      prefixIcon: const Icon(Icons.person),
-                    ),
-                  ),
+                  _buildTextField(_nameController, 'Full Name', Icons.person),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      labelStyle: const TextStyle(fontFamily: 'Poppins'),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      prefixIcon: const Icon(Icons.email),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
+                  _buildTextField(_emailController, 'Email', Icons.email, TextInputType.emailAddress),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      labelStyle: const TextStyle(fontFamily: 'Poppins'),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      prefixIcon: const Icon(Icons.lock),
-                    ),
-                    obscureText: true,
-                  ),
+                  _buildTextField(_passwordController, 'Password', Icons.lock, TextInputType.text),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: _confirmPasswordController,
-                    decoration: InputDecoration(
-                      labelText: 'Confirm Password',
-                      labelStyle: const TextStyle(fontFamily: 'Poppins'),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      prefixIcon: const Icon(Icons.lock),
-                    ),
-                    obscureText: true,
-                  ),
+                  _buildTextField(_confirmPasswordController, 'Confirm Password', Icons.lock, TextInputType.text),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
@@ -157,7 +133,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),
-                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        backgroundColor: Color(0xFF673AB7),
                       ),
                       child: const Text(
                         'Register',
@@ -171,14 +147,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   ),
                   const SizedBox(height: 16),
                   TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+                    onPressed: () => Navigator.pop(context),
                     child: const Text(
                       'Already have an account? Login',
                       style: TextStyle(
                         fontFamily: 'Poppins',
-                        color: Color.fromRGBO(33, 150, 243, 1),
+                        color: Color(0xFF673AB7),
                       ),
                     ),
                   ),
@@ -187,6 +161,22 @@ class _RegistrationPageState extends State<RegistrationPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, IconData icon, [TextInputType? type, bool obscureText = true]) {
+    return TextField(
+      controller: controller,
+      keyboardType: type,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(fontFamily: 'Poppins'),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        prefixIcon: Icon(icon),
       ),
     );
   }

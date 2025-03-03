@@ -37,6 +37,7 @@ dependencies:
   cloud_firestore: ^5.6.3
   dropdown_search: ^5.0.6
   image_picker: ^1.0.4
+  lottie: ^2.6.0 
 
 
 
