@@ -65,6 +65,21 @@ class _LaunchPageState extends State<LaunchPage> {
               ],
             ),
           ),
+          Positioned(
+            bottom: 20,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Text(
+                "Developed by Johan MZ",
+                style: TextStyle(
+                  fontFamily: 'Bebas',
+                  fontSize: 16,
+                  color: const Color.fromARGB(255, 93, 41, 142),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

@@ -38,6 +38,10 @@ dependencies:
   dropdown_search: ^5.0.6
   image_picker: ^1.0.4
   lottie: ^2.6.0 
+  fluttertoast: ^8.2.4
+  animate_do: ^3.0.2 
+
+
 
 
 

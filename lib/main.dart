@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_application_1/home.dart';
 import 'package:flutter_application_1/launch.dart';
+import 'package:flutter_application_1/sos.dart';
+import 'package:flutter_application_1/volunteer_registration.dart';
 import 'firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
 import 'login.dart'; // Import your login page
+
 
 
 void main() async {
@@ -33,7 +37,10 @@ class MyApp extends StatelessWidget {
       initialRoute: '/', // Define the initial route
       routes: {
         '/': (context) => const LaunchPage(),
-        '/login': (context) => const LoginPage(), // Ensure LoginPage is imported
+        '/login': (context) => const LoginPage(),
+        '/home':(context)=>const HomePage(),
+        '/sos':(context) =>const SOSPage(),
+        '/volunteer_registration':(context)=> VolunteerRegistrationPage()// Ensure LoginPage is imported
       },
     );
   }

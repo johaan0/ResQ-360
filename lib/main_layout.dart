@@ -1,43 +1,45 @@
 import 'package:flutter/material.dart';
-import 'login.dart';
-import 'sos.dart';
-import 'volunteer_registration.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class MainLayout extends StatefulWidget {
+  final Widget body;
+  const MainLayout({super.key, required this.body});
 
   @override
-  _HomePageState createState() => _HomePageState();
+  _MainLayoutState createState() => _MainLayoutState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _MainLayoutState extends State<MainLayout> {
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+
+    // Navigate to different screens based on index
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, '/sos');
+        break;
+      case 2:
+        Navigator.pushReplacementNamed(context, '/profile');
+        break;
+    }
   }
 
   void _logout(BuildContext context) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
-    );
+    Navigator.pushReplacementNamed(context, '/login');
   }
 
   void _navigateToSOS(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const SOSPage()),
-    );
+    Navigator.pushNamed(context, '/sos');
   }
 
   void _volunteerRegister(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => VolunteerRegistrationPage()),
-    );
+    Navigator.pushNamed(context, '/volunteer_registration');
   }
 
   @override
@@ -77,7 +79,7 @@ class _HomePageState extends State<HomePage> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topRight,
                   end: Alignment.bottomLeft,
@@ -101,46 +103,36 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               leading: const Icon(Icons.home),
               title: const Text('Home'),
-              onTap: () => Navigator.pop(context),
+              onTap: () => Navigator.pop(context), // Just close the drawer
             ),
             ListTile(
               leading: const Icon(Icons.sos),
               title: const Text('SOS'),
-              onTap: () => _navigateToSOS(context),
+              onTap: () {
+                Navigator.pop(context); // Close drawer
+                _navigateToSOS(context);
+              },
             ),
             ListTile(
               leading: const Icon(Icons.volunteer_activism),
               title: const Text('Become a Volunteer'),
-              onTap: () => _volunteerRegister(context),
+              onTap: () {
+                Navigator.pop(context); // Close drawer
+                _volunteerRegister(context);
+              },
             ),
             ListTile(
               leading: const Icon(Icons.logout_sharp),
               title: const Text('Logout'),
-              onTap: () => _logout(context),
+              onTap: () {
+                Navigator.pop(context); // Close drawer
+                _logout(context);
+              },
             ),
           ],
         ),
       ),
-      body: Container(
-        color: Colors.white, // Set solid white background
-        padding: const EdgeInsets.all(16.0),
-        child: GridView.count(
-          crossAxisCount: 3,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-         /* children: [
-            _buildEmergencyButton(context, Icons.local_police, "Police"),
-            _buildEmergencyButton(context, Icons.local_fire_department, "Fire"),
-            _buildEmergencyButton(context, Icons.local_hospital, "Medical"),
-            _buildEmergencyButton(context, Icons.waves, "Disaster"),
-            _buildEmergencyButton(context, Icons.woman, "Women"),
-            _buildEmergencyButton(context, Icons.child_care, "Child"),
-            _buildEmergencyButton(context, Icons.train, "Railway"),
-            _buildEmergencyButton(context, Icons.sos, "SOS"),
-            _buildEmergencyButton(context, Icons.help, "Others"),
-          ],*/
-        ),
-      ),
+      body: widget.body,
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
@@ -153,41 +145,5 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-  Widget _buildEmergencyButton(BuildContext context, IconData icon, String label) {
-    return GestureDetector(
-      onTap: () {}, // Define actions for each button
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        elevation: 8,
-        shadowColor: Colors.black54,
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: const LinearGradient(
-              colors: [Color(0xFF833AB4), Color(0xFFF56040)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 50, color: Colors.white),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
+

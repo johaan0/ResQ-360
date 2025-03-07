@@ -97,7 +97,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 borderRadius: BorderRadius.circular(16.0),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: const Color(0xFF833AB4).withOpacity(0.2),
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   ),
