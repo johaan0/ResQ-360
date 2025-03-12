@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'main_layout.dart';
 
 class VolunteerRegistrationPage extends StatefulWidget {
   const VolunteerRegistrationPage({super.key});
 
   @override
-  _VolunteerRegistrationPageState createState() =>
-      _VolunteerRegistrationPageState();
+  _VolunteerRegistrationPageState createState() => _VolunteerRegistrationPageState();
 }
 
 class _VolunteerRegistrationPageState extends State<VolunteerRegistrationPage> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
+  bool consentGiven = false;
   String? selectedRole;
-  
+  String? selectedLocation;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   final List<String> volunteerRoles = [
     "Emergency Response",
     "Logistics Support",
@@ -23,164 +24,193 @@ class _VolunteerRegistrationPageState extends State<VolunteerRegistrationPage> {
     "Rescue Operations"
   ];
 
-  void _showVolunteerResponsibilities() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.black,
-          title: const Text(
-            "Volunteer Responsibilities",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-          content: const Text(
-            "As a volunteer, you will be assisting in emergency response, logistics, food distribution, medical support, and rescue operations. "
-            "Your efforts will help save lives and provide aid to those in need.",
-            style: TextStyle(color: Colors.white70),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                "Got it",
-                style: TextStyle(color: Colors.redAccent),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+  final List<String> locations = [
+    "Kasaragod", 
+    "Kannur", 
+    "Wayanad", 
+    "Kozhikode",
+    "Malappuram",
+    "Palakkad", 
+    "Thrissur", 
+    "Ernakulam", 
+    "Idukki",
+    "Kottayam"
+  ];
+
+  Future<void> _registerVolunteer() async {
+    if (!consentGiven) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("You must agree to the consent before registering."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (selectedRole == null || selectedLocation == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please fill in all required details."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      // Store volunteer details in Firestore
+      await _firestore.collection('volunteers').add({
+        'role': selectedRole,
+        'location': selectedLocation,
+        'volunteer': true, // Mark volunteer status as true
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("You are now a registered volunteer!"),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Clear selections after successful registration
+      setState(() {
+        consentGiven = false;
+        selectedRole = null;
+        selectedLocation = null;
+      });
+
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Registration failed: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      body: Center(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: const Color(0xFF833AB4).withOpacity(0.5), // Instagram theme
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white.withOpacity(0.1),
-                blurRadius: 8,
-                spreadRadius: 1,
-              ),
-            ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.purple, Colors.pink, Colors.orange],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                "Volunteer Registration",
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 15),
-
-              // Full Name Input
-              TextField(
-                controller: _nameController,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: "Full Name",
-                  labelStyle: const TextStyle(color: Colors.white70),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey[900],
-                ),
-              ),
-              const SizedBox(height: 15),
-
-              // Phone Number Input
-              TextField(
-                controller: _phoneController,
-                style: const TextStyle(color: Colors.white),
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  labelText: "Phone Number",
-                  labelStyle: const TextStyle(color: Colors.white70),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey[900],
-                ),
-              ),
-              const SizedBox(height: 15),
-
-              // Role Dropdown
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Container(
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.grey[900],
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.white70),
+                  color: Colors.white.withOpacity(0.85),
+                  borderRadius: BorderRadius.circular(15),
                 ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    dropdownColor: Colors.black,
-                    value: selectedRole,
-                    hint: const Text(
-                      "Select Role",
-                      style: TextStyle(color: Colors.white70),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Center(
+                      child: Text(
+                        "Volunteer Registration",
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
                     ),
-                    items: volunteerRoles.map((role) {
-                      return DropdownMenuItem<String>(
+                    const SizedBox(height: 15),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red[100],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Text(
+                        "By registering as a volunteer, you agree to actively participate in emergency response activities, "
+                        "assist in disaster relief operations, follow safety protocols, and provide humanitarian support when needed. "
+                        "You also acknowledge the potential risks involved and confirm that you are physically and mentally prepared for volunteering.",
+                        style: TextStyle(color: Colors.black87),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    CheckboxListTile(
+                      title: const Text(
+                        "I have read and agree to the terms and conditions.",
+                        style: TextStyle(color: Colors.black),
+                      ),
+                      value: consentGiven,
+                      onChanged: (value) {
+                        setState(() {
+                          consentGiven = value ?? false;
+                        });
+                      },
+                      activeColor: Colors.redAccent,
+                      controlAffinity: ListTileControlAffinity.leading,
+                    ),
+                    const SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      dropdownColor: Colors.white,
+                      value: selectedRole,
+                      hint: const Text("Select Role", style: TextStyle(color: Colors.black54)),
+                      items: volunteerRoles.map((role) => DropdownMenuItem(
                         value: role,
-                        child: Text(
-                          role,
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedRole = value;
-                      });
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(height: 25),
-
-              // Submit Button
-              ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Registration Submitted!"),
-                      backgroundColor: Colors.green,
+                        child: Text(role, style: const TextStyle(color: Colors.black)),
+                      )).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedRole = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
                     ),
-                  );
-                  _showVolunteerResponsibilities();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text(
-                  "Submit",
-                  style: TextStyle(fontSize: 18, color: Colors.white),
+                    const SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      dropdownColor: Colors.white,
+                      value: selectedLocation,
+                      hint: const Text("Select Location", style: TextStyle(color: Colors.black54)),
+                      items: locations.map((loc) => DropdownMenuItem(
+                        value: loc,
+                        child: Text(loc, style: const TextStyle(color: Colors.black)),
+                      )).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedLocation = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: _registerVolunteer,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: consentGiven && selectedRole != null && selectedLocation != null
+                              ? Colors.redAccent
+                              : Colors.grey,
+                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 30),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        child: const Text("Register", style: TextStyle(fontSize: 18, color: Colors.white)),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 }
-

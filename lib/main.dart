@@ -6,6 +6,7 @@ import 'package:flutter_application_1/sos.dart';
 import 'package:flutter_application_1/volunteer_registration.dart';
 import 'firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
 import 'login.dart'; // Import your login page
+import 'profile.dart';
 
 
 
@@ -40,7 +41,8 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/home':(context)=>const HomePage(),
         '/sos':(context) =>const SOSPage(),
-        '/volunteer_registration':(context)=> VolunteerRegistrationPage()// Ensure LoginPage is imported
+        '/volunteer_registration':(context)=> VolunteerRegistrationPage(),
+        '/profile':(context) => ProfilePage()
       },
     );
   }
