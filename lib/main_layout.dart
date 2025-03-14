@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MainLayout extends StatefulWidget {
   final Widget body;
@@ -10,13 +12,43 @@ class MainLayout extends StatefulWidget {
 
 class _MainLayoutState extends State<MainLayout> {
   int _selectedIndex = 0;
+  String userName = "Loading...";
+  String userEmail = "Loading...";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  void _fetchUserData() async {
+  User? user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (userDoc.exists) {
+        setState(() {
+          userName = userDoc.get('name') ?? "Unknown User";
+          userEmail = userDoc.get('email') ?? "No Email";
+        });
+        print("Fetched User: $userName, $userEmail"); // Debugging
+      } else {
+        print("User document does not exist");
+      }
+    } catch (e) {
+      print("Error fetching user data: $e");
+    }
+  } else {
+    print("No user logged in");
+  }
+}
+
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
 
-    // Navigate to different screens based on index
     switch (index) {
       case 0:
         Navigator.pushReplacementNamed(context, '/home');
@@ -40,6 +72,10 @@ class _MainLayoutState extends State<MainLayout> {
 
   void _volunteerRegister(BuildContext context) {
     Navigator.pushNamed(context, '/volunteer_registration');
+  }
+
+  void _about(BuildContext context) {
+    Navigator.pushNamed(context, '/about');
   }
 
   @override
@@ -90,26 +126,26 @@ class _MainLayoutState extends State<MainLayout> {
                   ],
                 ),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.account_circle, size: 50, color: Colors.white),
-                  SizedBox(height: 10),
-                  Text("User Name", style: TextStyle(fontSize: 18, color: Colors.white)),
-                  Text("user@example.com", style: TextStyle(fontSize: 14, color: Colors.white70)),
+                  const Icon(Icons.account_circle, size: 50, color: Colors.white),
+                  const SizedBox(height: 10),
+                  Text(userName, style: const TextStyle(fontSize: 18, color: Colors.white)),
+                  Text(userEmail, style: const TextStyle(fontSize: 14, color: Colors.white70)),
                 ],
               ),
             ),
             ListTile(
               leading: const Icon(Icons.home),
               title: const Text('Home'),
-              onTap: () => Navigator.pop(context), // Just close the drawer
+              onTap: () => Navigator.pop(context),
             ),
             ListTile(
               leading: const Icon(Icons.sos),
               title: const Text('SOS'),
               onTap: () {
-                Navigator.pop(context); // Close drawer
+                Navigator.pop(context);
                 _navigateToSOS(context);
               },
             ),
@@ -117,7 +153,7 @@ class _MainLayoutState extends State<MainLayout> {
               leading: const Icon(Icons.volunteer_activism),
               title: const Text('Become a Volunteer'),
               onTap: () {
-                Navigator.pop(context); // Close drawer
+                Navigator.pop(context);
                 _volunteerRegister(context);
               },
             ),
@@ -125,8 +161,16 @@ class _MainLayoutState extends State<MainLayout> {
               leading: const Icon(Icons.logout_sharp),
               title: const Text('Logout'),
               onTap: () {
-                Navigator.pop(context); // Close drawer
+                Navigator.pop(context);
                 _logout(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.abc),
+              title: const Text('About'),
+              onTap: () {
+                Navigator.pop(context);
+                _about(context);
               },
             ),
           ],
@@ -146,4 +190,3 @@ class _MainLayoutState extends State<MainLayout> {
     );
   }
 }
-

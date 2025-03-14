@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:animate_do/animate_do.dart';
 import 'main_layout.dart';
+import 'package:audioplayers/audioplayers.dart'; // Import the package
+
 
 class SOSPage extends StatefulWidget {
   const SOSPage({super.key});
@@ -15,6 +17,8 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
   late Animation<double> _animation;
   TextEditingController messageController = TextEditingController();
   bool isAnimating = false;
+  final AudioPlayer _audioPlayer = AudioPlayer(); // Initialize AudioPlayer
+
 
   @override
   void initState() {
@@ -42,6 +46,9 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
       });
       _animationController.forward();
     }
+    
+    // Play SOS sound
+  _audioPlayer.play(AssetSource('audio/sos_1.mp3'));
 
     // Show popup message
     Future.delayed(const Duration(seconds: 1), () {

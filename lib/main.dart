@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_application_1/about.dart';
 import 'package:flutter_application_1/home.dart';
 import 'package:flutter_application_1/launch.dart';
 import 'package:flutter_application_1/sos.dart';
@@ -7,7 +8,6 @@ import 'package:flutter_application_1/volunteer_registration.dart';
 import 'firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
 import 'login.dart'; // Import your login page
 import 'profile.dart';
-
 
 
 void main() async {
@@ -23,7 +23,6 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -39,14 +38,12 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const LaunchPage(),
         '/login': (context) => const LoginPage(),
-        '/home':(context)=>const HomePage(),
-        '/sos':(context) =>const SOSPage(),
-        '/volunteer_registration':(context)=> VolunteerRegistrationPage(),
-        '/profile':(context) => ProfilePage()
+        '/home': (context) => const HomePage(),
+        '/sos': (context) => const SOSPage(),
+        '/volunteer_registration': (context) => VolunteerRegistrationPage(),
+        '/profile': (context) => ProfilePage(),
+        '/about': (context) => AboutPage()
       },
     );
   }
 }
-
-
-

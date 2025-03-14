@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'login.dart';
-import 'sos.dart';
-import 'volunteer_registration.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'main_layout.dart'; // Import MainLayout
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,159 +10,62 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  void _logout(BuildContext context) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
-    );
-  }
-
-  void _navigateToSOS(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const SOSPage()),
-    );
-  }
-
-  void _volunteerRegister(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => VolunteerRegistrationPage()),
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56.0),
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF833AB4), Color(0xFFF56040)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: AppBar(
-            title: const Text(
-              "ResQ 360",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.notifications, color: Colors.white),
-                onPressed: () {},
-              ),
-            ],
-          ),
-        ),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topRight,
-                  end: Alignment.bottomLeft,
-                  colors: [
-                    Color(0xFF833AB4),
-                    Color(0xFFF56040),
-                    Color(0xFFFFC837),
-                  ],
-                ),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.account_circle, size: 50, color: Colors.white),
-                  SizedBox(height: 10),
-                  Text("User Name", style: TextStyle(fontSize: 18, color: Colors.white)),
-                  Text("user@example.com", style: TextStyle(fontSize: 14, color: Colors.white70)),
-                ],
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Home'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              leading: const Icon(Icons.sos),
-              title: const Text('SOS'),
-              onTap: () => _navigateToSOS(context),
-            ),
-            ListTile(
-              leading: const Icon(Icons.volunteer_activism),
-              title: const Text('Become a Volunteer'),
-              onTap: () => _volunteerRegister(context),
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout_sharp),
-              title: const Text('Logout'),
-              onTap: () => _logout(context),
-            ),
-          ],
-        ),
-      ),
-      body: Container(
-        color: Colors.white, // Set solid white background
+    return MainLayout(
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: GridView.count(
-          crossAxisCount: 3,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-         /* children: [
-            _buildEmergencyButton(context, Icons.local_police, "Police"),
-            _buildEmergencyButton(context, Icons.local_fire_department, "Fire"),
-            _buildEmergencyButton(context, Icons.local_hospital, "Medical"),
-            _buildEmergencyButton(context, Icons.waves, "Disaster"),
-            _buildEmergencyButton(context, Icons.woman, "Women"),
-            _buildEmergencyButton(context, Icons.child_care, "Child"),
-            _buildEmergencyButton(context, Icons.train, "Railway"),
-            _buildEmergencyButton(context, Icons.sos, "SOS"),
-            _buildEmergencyButton(context, Icons.help, "Others"),
-          ],*/
+        child: SingleChildScrollView(
+          child: Column(
+            children: List.generate(9, (index) {
+              final items = [
+                {'icon': Icons.local_police, 'label': "Police"},
+                {'icon': Icons.local_fire_department, 'label': "Fire"},
+                {'icon': Icons.local_hospital, 'label': "Medical"},
+                {'icon': Icons.waves, 'label': "Disaster"},
+                {'icon': Icons.woman, 'label': "Women"},
+                {'icon': Icons.child_care, 'label': "Child"},
+                {'icon': Icons.train, 'label': "Railway"},
+                {'icon': Icons.sos, 'label': "SOS"},
+                {'icon': Icons.help, 'label': "Others"},
+              ];
+              
+              return _buildEmergencyButton(
+                items[index]['icon'] as IconData,
+                items[index]['label'] as String,
+                index,
+              );
+            }),
+          ),
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.sos), label: 'SOS'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: const Color(0xFF833AB4),
-        onTap: _onItemTapped,
       ),
     );
   }
 
-  Widget _buildEmergencyButton(BuildContext context, IconData icon, String label) {
+  Widget _buildEmergencyButton(IconData icon, String label, int index) {
     return GestureDetector(
-      onTap: () {}, // Define actions for each button
+      onTap: () {
+        HapticFeedback.lightImpact(); // Subtle vibration feedback
+      },
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        elevation: 8,
-        shadowColor: Colors.black54,
+        elevation: 6,
+        shadowColor: Colors.black38,
         child: Container(
-          padding: const EdgeInsets.all(12),
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             gradient: const LinearGradient(
@@ -171,11 +74,14 @@ class _HomePageState extends State<HomePage> {
               end: Alignment.bottomCenter,
             ),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Icon(icon, size: 50, color: Colors.white),
-              const SizedBox(height: 8),
+              Icon(icon, size: 48, color: Colors.white)
+                  .animate()
+                  .scale(delay: 200.ms, duration: 500.ms)
+                  .shake(hz: 3, curve: Curves.easeInOut),
+              const SizedBox(width: 16),
               Text(
                 label,
                 style: const TextStyle(
@@ -183,11 +89,29 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
-              ),
+              ).animate().fadeIn(delay: 300.ms, duration: 500.ms),
             ],
           ),
         ),
+      )
+      .animate()
+      .slide(
+        begin: index.isEven ? Offset(-1.5, 0) : Offset(1.5, 0),
+        duration: 600.ms,
+        curve: Curves.easeOut,
       ),
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _animationController.forward(); // Trigger slide animation on page load
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 }
