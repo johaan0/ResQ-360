@@ -22,6 +22,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   double _containerPosition = 1000;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void initState() {
@@ -120,9 +122,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   const SizedBox(height: 16),
                   _buildTextField(_emailController, 'Email', Icons.email, TextInputType.emailAddress),
                   const SizedBox(height: 16),
-                  _buildTextField(_passwordController, 'Password', Icons.lock, TextInputType.text),
+                  _buildPasswordField(_passwordController, 'Password', true),
                   const SizedBox(height: 16),
-                  _buildTextField(_confirmPasswordController, 'Confirm Password', Icons.lock, TextInputType.text),
+                  _buildPasswordField(_confirmPasswordController, 'Confirm Password', false),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
@@ -165,18 +167,48 @@ class _RegistrationPageState extends State<RegistrationPage> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon, [TextInputType? type, bool obscureText = true]) {
+  Widget _buildTextField(TextEditingController controller, String label, IconData icon, [TextInputType? type]) {
     return TextField(
       controller: controller,
       keyboardType: type,
-      obscureText: obscureText,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(fontFamily: 'Poppins'),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
         ),
-        prefixIcon: Icon(icon),
+        prefixIcon: Icon(icon, color: Color(0xFF673AB7)),
+      ),
+    );
+  }
+
+  Widget _buildPasswordField(TextEditingController controller, String label, bool isPasswordField) {
+    return TextField(
+      controller: controller,
+      obscureText: isPasswordField ? _obscurePassword : _obscureConfirmPassword,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(fontFamily: 'Poppins'),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        prefixIcon: Icon(Icons.lock, color: Color(0xFF673AB7)),
+        suffixIcon: IconButton(
+          icon: Icon(
+            isPasswordField ? (_obscurePassword ? Icons.visibility_off : Icons.visibility)
+                            : (_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
+            color: Color(0xFF673AB7),
+          ),
+          onPressed: () {
+            setState(() {
+              if (isPasswordField) {
+                _obscurePassword = !_obscurePassword;
+              } else {
+                _obscureConfirmPassword = !_obscureConfirmPassword;
+              }
+            });
+          },
+        ),
       ),
     );
   }

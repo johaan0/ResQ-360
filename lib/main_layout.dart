@@ -22,27 +22,26 @@ class _MainLayoutState extends State<MainLayout> {
   }
 
   void _fetchUserData() async {
-  User? user = FirebaseAuth.instance.currentUser;
-  if (user != null) {
-    try {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-      if (userDoc.exists) {
-        setState(() {
-          userName = userDoc.get('name') ?? "Unknown User";
-          userEmail = userDoc.get('email') ?? "No Email";
-        });
-        print("Fetched User: $userName, $userEmail"); // Debugging
-      } else {
-        print("User document does not exist");
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+          setState(() {
+            userName = userDoc.get('name') ?? "Unknown User";
+            userEmail = userDoc.get('email') ?? "No Email";
+          });
+          print("Fetched User: $userName, $userEmail"); // Debugging
+        } else {
+          print("User document does not exist");
+        }
+      } catch (e) {
+        print("Error fetching user data: $e");
       }
-    } catch (e) {
-      print("Error fetching user data: $e");
+    } else {
+      print("No user logged in");
     }
-  } else {
-    print("No user logged in");
   }
-}
-
 
   void _onItemTapped(int index) {
     setState(() {
@@ -60,6 +59,10 @@ class _MainLayoutState extends State<MainLayout> {
         Navigator.pushReplacementNamed(context, '/profile');
         break;
     }
+  }
+
+  void _home(BuildContext context) {
+    Navigator.pushReplacementNamed(context, '/home');
   }
 
   void _logout(BuildContext context) {
@@ -139,7 +142,10 @@ class _MainLayoutState extends State<MainLayout> {
             ListTile(
               leading: const Icon(Icons.home),
               title: const Text('Home'),
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                _home(context);
+              }
             ),
             ListTile(
               leading: const Icon(Icons.sos),
@@ -166,7 +172,7 @@ class _MainLayoutState extends State<MainLayout> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.abc),
+              leading: const Icon(Icons.info_outline),
               title: const Text('About'),
               onTap: () {
                 Navigator.pop(context);
@@ -185,7 +191,9 @@ class _MainLayoutState extends State<MainLayout> {
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: const Color(0xFF833AB4),
+        unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
+        selectedIconTheme: const IconThemeData(color: Color(0xFF833AB4)),
       ),
     );
   }

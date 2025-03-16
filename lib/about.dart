@@ -19,13 +19,20 @@ class AboutPage extends StatelessWidget {
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(30.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 FadeInDown(
                   duration: const Duration(milliseconds: 800),
-                  child: const Icon(Icons.shield_rounded, size: 100, color: Colors.white),
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.2),
+                    ),
+                    child: const Icon(Icons.shield_rounded, size: 100, color: Colors.white),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 FadeInUp(
@@ -70,20 +77,6 @@ class AboutPage extends StatelessWidget {
                   child: _buildFeatureTile(Icons.notifications_active, "Real-time Alerts",
                       "Receive critical updates and emergency notifications."),
                 ),
-                const SizedBox(height: 20),
-                /*FadeInUp(
-                  duration: const Duration(milliseconds: 1800),
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                    ),
-                    child: const Text("Back to Home", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  ),
-                ),*/
               ],
             ),
           ),

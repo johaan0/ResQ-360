@@ -41,6 +41,7 @@ dependencies:
   fluttertoast: ^8.2.4
   animate_do: ^3.0.2 
   audioplayers: ^5.2.1
+  
 
 
 
@@ -81,7 +82,7 @@ flutter:
  
       - assets/background.png
       - assets/animations/background.json
-      - assets/audio/sos_1.mp3
+      - assets/audio/test.mp3
   
 
   # An image asset can refer to one or more resolution-specific "variants", see

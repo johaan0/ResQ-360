@@ -10,7 +10,8 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
 
   @override
@@ -37,11 +38,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 {'icon': Icons.waves, 'label': "Disaster"},
                 {'icon': Icons.woman, 'label': "Women"},
                 {'icon': Icons.child_care, 'label': "Child"},
+                {'icon': Icons.location_pin, 'label': "Location"},
                 {'icon': Icons.train, 'label': "Railway"},
                 {'icon': Icons.sos, 'label': "SOS"},
                 {'icon': Icons.help, 'label': "Others"},
               ];
-              
+
               return _buildEmergencyButton(
                 items[index]['icon'] as IconData,
                 items[index]['label'] as String,
@@ -70,8 +72,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             borderRadius: BorderRadius.circular(16),
             gradient: const LinearGradient(
               colors: [Color(0xFF833AB4), Color(0xFFF56040)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
             ),
           ),
           child: Row(
@@ -93,13 +95,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             ],
           ),
         ),
-      )
-      .animate()
-      .slide(
-        begin: index.isEven ? Offset(-1.5, 0) : Offset(1.5, 0),
-        duration: 600.ms,
-        curve: Curves.easeOut,
-      ),
+      ).animate().slide(
+            begin: index.isEven ? Offset(-1.5, 0) : Offset(1.5, 0),
+            duration: 600.ms,
+            curve: Curves.easeOut,
+          ),
     );
   }
 
