@@ -81,9 +81,9 @@ class _ProfilePageState extends State<ProfilePage> {
               // Profile Picture
               Center(
                 child: CircleAvatar(
-                  radius: 50,
+                  radius: 30,
                   backgroundColor: Colors.white,
-                  child: Icon(Icons.person, size: 50, color: Colors.black),
+                  child: Icon(Icons.person_outline, size: 50, color: Colors.black),
                 ),
               ),
               const SizedBox(height: 20),
@@ -99,8 +99,17 @@ class _ProfilePageState extends State<ProfilePage> {
               const Text("Emergency Contacts", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               // Emergency Contacts
-              for (int i = 0; i < 5; i++) buildTextField("Contact ${i + 1}", emergencyContacts[i]),
-              const SizedBox(height: 20),
+              Column(
+                children: [
+                   for (int i = 0; i < 5; i++)...[
+                    buildTextField("Contact ${i + 1}", emergencyContacts[i]),
+                    const SizedBox(height: 10),
+                   ]
+
+                ],
+              )
+              
+              ,const SizedBox(height: 10),
               // Save Button
               ElevatedButton(
                 onPressed: saveUserData,

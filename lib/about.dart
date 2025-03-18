@@ -19,19 +19,19 @@ class AboutPage extends StatelessWidget {
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Padding(
-            padding: const EdgeInsets.all(30.0),
+            padding: const EdgeInsets.all(40.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 FadeInDown(
                   duration: const Duration(milliseconds: 800),
                   child: Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white.withOpacity(0.2),
                     ),
-                    child: const Icon(Icons.shield_rounded, size: 100, color: Colors.white),
+                    child: const Icon(Icons.shield_outlined, size: 100, color: Colors.white),
                   ),
                 ),
                 const SizedBox(height: 20),
