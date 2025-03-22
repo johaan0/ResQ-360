@@ -8,6 +8,7 @@ import 'package:flutter_application_1/volunteer_registration.dart';
 import 'firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
 import 'login.dart'; // Import your login page
 import 'profile.dart';
+import 'location.dart';
 
 
 void main() async {
@@ -42,7 +43,8 @@ class MyApp extends StatelessWidget {
         '/sos': (context) => const SOSPage(),
         '/volunteer_registration': (context) => VolunteerRegistrationPage(),
         '/profile': (context) => ProfilePage(),
-        '/about': (context) => AboutPage()
+        '/about': (context) => AboutPage(),
+        '/location':(context)=>UserLocationMap()
       },
     );
   }

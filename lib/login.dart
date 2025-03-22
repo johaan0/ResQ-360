@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'home.dart'; // Import your Home page
 import 'registration_page.dart';
+import 'admin/admin.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -46,41 +49,62 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     super.dispose();
   }
 
-  void _login() async {
-    String email = _emailController.text.trim();
-    String password = _passwordController.text.trim();
+void _login() async {
+  String email = _emailController.text.trim();
+  String password = _passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
-      _showErrorMessage("Please enter email and password.");
-      return;
-    }
-
-    try {
-      // ignore: unused_local_variable
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      // If login successful, navigate to home page
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-      );
-    } catch (e) {
-      _showErrorMessage("Invalid email or password.");
-    }
+  if (email.isEmpty || password.isEmpty) {
+    _showErrorMessage("Please enter email and password.");
+    return;
   }
 
-  void _showErrorMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 2),
-      ),
+  try {
+    // Authenticate user with Firebase Auth
+    UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
     );
+
+    // Get user UID
+    String uid = userCredential.user!.uid;
+
+    // Fetch user role from Firestore using UID
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(uid) // Fetch by UID
+        .get();
+
+    if (userDoc.exists) {
+      String role = userDoc.get("role");
+
+      if (role == "admin") {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => AdminPage()), 
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()), 
+        );
+      }
+    } else {
+      _showErrorMessage("User data not found.");
+    }
+  } catch (e) {
+    _showErrorMessage("Invalid email or password.");
   }
+}
+
+void _showErrorMessage(String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+      duration: const Duration(seconds: 2),
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {

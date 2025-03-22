@@ -80,6 +80,9 @@ class _MainLayoutState extends State<MainLayout> {
   void _about(BuildContext context) {
     Navigator.pushNamed(context, '/about');
   }
+  void _location(BuildContext context) {
+    Navigator.pushNamed(context, '/location');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -177,6 +180,14 @@ class _MainLayoutState extends State<MainLayout> {
               onTap: () {
                 Navigator.pop(context);
                 _about(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('Location'),
+              onTap: () {
+                Navigator.pop(context);
+                _location(context);
               },
             ),
           ],

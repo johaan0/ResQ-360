@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import 'main_layout.dart';
 
 class VolunteerRegistrationPage extends StatefulWidget {
@@ -13,7 +17,12 @@ class _VolunteerRegistrationPageState extends State<VolunteerRegistrationPage> {
   bool consentGiven = false;
   String? selectedRole;
   String? selectedLocation;
+  String? userName;
+  File? kycFile;
+  bool isUploading = false;
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   final List<String> volunteerRoles = [
     "Emergency Response",
@@ -25,53 +34,63 @@ class _VolunteerRegistrationPageState extends State<VolunteerRegistrationPage> {
   ];
 
   final List<String> locations = [
-    "Kasaragod", 
-    "Kannur", 
-    "Wayanad", 
-    "Kozhikode",
-    "Malappuram",
-    "Palakkad", 
-    "Thrissur", 
-    "Ernakulam", 
-    "Idukki",
-    "Kottayam"
+    "Kasaragod", "Kannur", "Wayanad", "Kozhikode",
+    "Malappuram", "Palakkad", "Thrissur",
+    "Ernakulam", "Idukki", "Kottayam"
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserName();
+  }
+
+  Future<void> _fetchUserName() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+      setState(() {
+        userName = userDoc.get('name'); // Assuming 'name' is stored in 'users' collection
+      });
+    }
+  }
 
   Future<void> _registerVolunteer() async {
     if (!consentGiven) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("You must agree to the consent before registering."),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text("You must agree to the consent before registering."), backgroundColor: Colors.red),
       );
       return;
     }
 
-    if (selectedRole == null || selectedLocation == null) {
+    if (selectedRole == null || selectedLocation == null || kycFile == null || userName == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please fill in all required details."),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text("Please fill in all required details and upload KYC document."), backgroundColor: Colors.red),
       );
       return;
     }
+
+    setState(() {
+      isUploading = true;
+    });
 
     try {
+      // Upload KYC document to Firebase Storage
+      String kycUrl = await _uploadKyc();
+
       // Store volunteer details in Firestore
       await _firestore.collection('volunteers').add({
+        'name': userName, // Foreign key reference to users collection
         'role': selectedRole,
         'location': selectedLocation,
-        'volunteer': true, // Mark volunteer status as true
+        'kycUrl': kycUrl, // Store KYC document URL
+        'approval': "no", // Default approval status
+        'volunteer': true,
         'timestamp': FieldValue.serverTimestamp(),
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("You are now a registered volunteer!"),
-          backgroundColor: Colors.green,
-        ),
+        const SnackBar(content: Text("You are now a registered volunteer!"), backgroundColor: Colors.green),
       );
 
       // Clear selections after successful registration
@@ -79,15 +98,34 @@ class _VolunteerRegistrationPageState extends State<VolunteerRegistrationPage> {
         consentGiven = false;
         selectedRole = null;
         selectedLocation = null;
+        kycFile = null;
+        isUploading = false;
       });
 
     } catch (e) {
+      setState(() {
+        isUploading = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Registration failed: ${e.toString()}"),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text("Registration failed: ${e.toString()}"), backgroundColor: Colors.red),
       );
+    }
+  }
+
+  Future<String> _uploadKyc() async {
+    String fileName = "${_auth.currentUser!.uid}_kyc.jpg";
+    Reference storageRef = FirebaseStorage.instance.ref().child("kyc_documents/$fileName");
+    UploadTask uploadTask = storageRef.putFile(kycFile!);
+    TaskSnapshot snapshot = await uploadTask;
+    return await snapshot.ref.getDownloadURL();
+  }
+
+  Future<void> _pickKycDocument() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        kycFile = File(pickedFile.path);
+      });
     }
   }
 
@@ -116,9 +154,8 @@ class _VolunteerRegistrationPageState extends State<VolunteerRegistrationPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Center(
-                      child: Text(
-                        "Volunteer Registration",
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+                      child: Text("Volunteer Registration", 
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black)
                       ),
                     ),
                     const SizedBox(height: 15),
@@ -137,10 +174,7 @@ class _VolunteerRegistrationPageState extends State<VolunteerRegistrationPage> {
                     ),
                     const SizedBox(height: 10),
                     CheckboxListTile(
-                      title: const Text(
-                        "I have read and agree to the terms and conditions.",
-                        style: TextStyle(color: Colors.black),
-                      ),
+                      title: const Text("I have read and agree to the terms and conditions.", style: TextStyle(color: Colors.black)),
                       value: consentGiven,
                       onChanged: (value) {
                         setState(() {
@@ -152,56 +186,37 @@ class _VolunteerRegistrationPageState extends State<VolunteerRegistrationPage> {
                     ),
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
-                      dropdownColor: Colors.white,
                       value: selectedRole,
                       hint: const Text("Select Role", style: TextStyle(color: Colors.black54)),
-                      items: volunteerRoles.map((role) => DropdownMenuItem(
-                        value: role,
-                        child: Text(role, style: const TextStyle(color: Colors.black)),
-                      )).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedRole = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
+                      items: volunteerRoles.map((role) => DropdownMenuItem(value: role, child: Text(role))).toList(),
+                      onChanged: (value) => setState(() { selectedRole = value; }),
+                      decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
                     ),
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
-                      dropdownColor: Colors.white,
                       value: selectedLocation,
                       hint: const Text("Select Location", style: TextStyle(color: Colors.black54)),
-                      items: locations.map((loc) => DropdownMenuItem(
-                        value: loc,
-                        child: Text(loc, style: const TextStyle(color: Colors.black)),
-                      )).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedLocation = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
+                      items: locations.map((loc) => DropdownMenuItem(value: loc, child: Text(loc))).toList(),
+                      onChanged: (value) => setState(() { selectedLocation = value; }),
+                      decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
                     ),
+                    const SizedBox(height: 15),
+                    TextButton.icon(
+                      onPressed: _pickKycDocument,
+                      icon: const Icon(Icons.upload_file, color: Colors.black),
+                      label: const Text("Upload KYC Document", style: TextStyle(color: Colors.black)),
+                    ),
+                    if (kycFile != null) Text("KYC Document Selected", style: TextStyle(color: Colors.green)),
                     const SizedBox(height: 20),
                     Center(
                       child: ElevatedButton(
-                        onPressed: _registerVolunteer,
+                        onPressed: isUploading ? null : _registerVolunteer,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: consentGiven && selectedRole != null && selectedLocation != null
-                              ? Colors.redAccent
-                              : Colors.grey,
+                          backgroundColor: Colors.redAccent,
                           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 30),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        child: const Text("Register", style: TextStyle(fontSize: 18, color: Colors.white)),
+                        child: isUploading ? CircularProgressIndicator(color: Colors.white) : const Text("Register", style: TextStyle(fontSize: 18, color: Colors.white)),
                       ),
                     ),
                   ],

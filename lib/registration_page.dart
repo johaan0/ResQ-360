@@ -36,40 +36,45 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 
   Future<void> _register() async {
-    String name = _nameController.text.trim();
-    String email = _emailController.text.trim();
-    String password = _passwordController.text.trim();
-    String confirmPassword = _confirmPasswordController.text.trim();
+  String name = _nameController.text.trim();
+  String email = _emailController.text.trim();
+  String password = _passwordController.text.trim();
+  String confirmPassword = _confirmPasswordController.text.trim();
 
-    if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Passwords do not match")),
-      );
-      return;
-    }
-
-    try {
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      await _firestore.collection("users").doc(userCredential.user!.uid).set({
-        "name": name,
-        "email": email,
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Registration successful!")),
-      );
-      
-      Navigator.pop(context);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: ${e.toString()}")),
-      );
-    }
+  if (password != confirmPassword) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Passwords do not match")),
+    );
+    return;
   }
+
+  try {
+    // Register the user with Firebase Authentication
+    UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    // Store user details in Firestore, including the default role
+    await _firestore.collection("users").doc(userCredential.user!.uid).set({
+      "name": name,
+      "email": email,
+      "role": "user",
+      "phone": "", 
+      "emergencyContacts": ["", "", "", "", ""], 
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Registration successful!")),
+    );
+
+    Navigator.pop(context);
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error: ${e.toString()}")),
+    );
+  }
+}
 
   @override
   Widget build(BuildContext context) {
