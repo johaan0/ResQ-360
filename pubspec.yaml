@@ -45,6 +45,11 @@ dependencies:
   latlong2: ^0.9.0  # For handling lat/lng
   geolocator: ^10.1.0  # Get user's location
   permission_handler: ^11.0.1
+  http: ^1.3.0
+  path: ^1.8.3 
+  file_picker: ^9.2.1
+  url_launcher: ^6.1.14
+  flutter_pdfview: ^1.2.7
   
 
 
@@ -56,6 +61,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_animate: ^4.5.2
   firebase_storage: ^12.4.4
+  visibility_detector: ^0.4.0+2
 
 dev_dependencies:
   flutter_test:

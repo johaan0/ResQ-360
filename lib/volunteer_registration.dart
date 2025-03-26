@@ -5,6 +5,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'main_layout.dart';
+import 'cloudinary_service.dart';
+import 'package:file_picker/file_picker.dart';
 
 class VolunteerRegistrationPage extends StatefulWidget {
   const VolunteerRegistrationPage({super.key});
@@ -84,13 +86,13 @@ class _VolunteerRegistrationPageState extends State<VolunteerRegistrationPage> {
         'role': selectedRole,
         'location': selectedLocation,
         'kycUrl': kycUrl, // Store KYC document URL
-        'approval': "no", // Default approval status
+        'approval': "pending", // Default approval status
         'volunteer': true,
         'timestamp': FieldValue.serverTimestamp(),
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("You are now a registered volunteer!"), backgroundColor: Colors.green),
+        const SnackBar(content: Text("Your registration is being analyzed! We will get to you soon"), backgroundColor: Colors.green),
       );
 
       // Clear selections after successful registration
@@ -113,21 +115,23 @@ class _VolunteerRegistrationPageState extends State<VolunteerRegistrationPage> {
   }
 
   Future<String> _uploadKyc() async {
-    String fileName = "${_auth.currentUser!.uid}_kyc.jpg";
-    Reference storageRef = FirebaseStorage.instance.ref().child("kyc_documents/$fileName");
-    UploadTask uploadTask = storageRef.putFile(kycFile!);
-    TaskSnapshot snapshot = await uploadTask;
-    return await snapshot.ref.getDownloadURL();
-  }
+  CloudinaryService cloudinaryService = CloudinaryService();
+  return await cloudinaryService.uploadFile(kycFile!);
+}
+
 
   Future<void> _pickKycDocument() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        kycFile = File(pickedFile.path);
-      });
-    }
+  FilePickerResult? result = await FilePicker.platform.pickFiles(
+    type: FileType.custom,
+    allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'], // Allow both images and PDFs
+  );
+
+  if (result != null) {
+    setState(() {
+      kycFile = File(result.files.single.path!);
+    });
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -208,15 +212,17 @@ class _VolunteerRegistrationPageState extends State<VolunteerRegistrationPage> {
                     ),
                     if (kycFile != null) Text("KYC Document Selected", style: TextStyle(color: Colors.green)),
                     const SizedBox(height: 20),
-                    Center(
+                   Center(
                       child: ElevatedButton(
-                        onPressed: isUploading ? null : _registerVolunteer,
+                        onPressed: _registerVolunteer,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent,
+                          backgroundColor: consentGiven && selectedRole != null && selectedLocation != null
+                              ? Colors.redAccent
+                              : Colors.grey,
                           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 30),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        child: isUploading ? CircularProgressIndicator(color: Colors.white) : const Text("Register", style: TextStyle(fontSize: 18, color: Colors.white)),
+                        child: const Text("Register", style: TextStyle(fontSize: 18, color: Colors.white)),
                       ),
                     ),
                   ],

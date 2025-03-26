@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'main_layout.dart'; // Import MainLayout
+import 'package:visibility_detector/visibility_detector.dart';
+import 'main_layout.dart';
+import 'location.dart'; // Import Location Page
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,18 +12,8 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-  }
+class _HomePageState extends State<HomePage> {
+  final List<bool> _isVisible = List.generate(10, (_) => false);
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +22,7 @@ class _HomePageState extends State<HomePage>
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
-            children: List.generate(9, (index) {
+            children: List.generate(10, (index) {
               final items = [
                 {'icon': Icons.local_police, 'label': "Police"},
                 {'icon': Icons.local_fire_department, 'label': "Fire"},
@@ -44,10 +36,24 @@ class _HomePageState extends State<HomePage>
                 {'icon': Icons.help, 'label': "Others"},
               ];
 
-              return _buildEmergencyButton(
-                items[index]['icon'] as IconData,
-                items[index]['label'] as String,
-                index,
+              return VisibilityDetector(
+                key: Key("item_$index"),
+                onVisibilityChanged: (visibilityInfo) {
+                  if (visibilityInfo.visibleFraction > 0.1) {
+                    setState(() {
+                      _isVisible[index] = true;
+                    });
+                  }
+                },
+                child: AnimatedOpacity(
+                  duration: Duration(milliseconds: 500),
+                  opacity: _isVisible[index] ? 1.0 : 0.0,
+                  child: _buildEmergencyButton(
+                    items[index]['icon'] as IconData,
+                    items[index]['label'] as String,
+                    index,
+                  ),
+                ),
               );
             }),
           ),
@@ -59,7 +65,13 @@ class _HomePageState extends State<HomePage>
   Widget _buildEmergencyButton(IconData icon, String label, int index) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact(); // Subtle vibration feedback
+        HapticFeedback.lightImpact(); // Vibration feedback
+        if (label == "Location") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => UserLocationMap ()),
+          );
+        }
       },
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -80,7 +92,7 @@ class _HomePageState extends State<HomePage>
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Icon(icon, size: 48, color: Colors.white)
-                  .animate()
+                  .animate(target: _isVisible[index] ? 1 : 0)
                   .scale(delay: 200.ms, duration: 500.ms)
                   .shake(hz: 3, curve: Curves.easeInOut),
               const SizedBox(width: 16),
@@ -91,27 +103,16 @@ class _HomePageState extends State<HomePage>
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
-              ).animate().fadeIn(delay: 300.ms, duration: 500.ms),
+              ).animate(target: _isVisible[index] ? 1 : 0)
+                  .fadeIn(delay: 300.ms, duration: 500.ms),
             ],
           ),
         ),
-      ).animate().slide(
+      ).animate(target: _isVisible[index] ? 1 : 0).slide(
             begin: index.isEven ? Offset(-1.5, 0) : Offset(1.5, 0),
             duration: 600.ms,
             curve: Curves.easeOut,
           ),
     );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _animationController.forward(); // Trigger slide animation on page load
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
   }
 }

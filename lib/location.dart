@@ -45,7 +45,7 @@ class _UserLocationMapState extends State<UserLocationMap> {
 
     // Ensure mapController is not null before calling move()
     if (_mapController != null && _currentLocation != null) {
-      _mapController!.move(_currentLocation!, 15.0);
+      _mapController!.move(_currentLocation!, 20.0);
     }
   }
 
