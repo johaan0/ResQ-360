@@ -4,6 +4,10 @@ import 'package:animate_do/animate_do.dart';
 import 'main_layout.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:telephony_sms/telephony_sms.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_application_1/location.dart';
 
 class SOSPage extends StatefulWidget {
   const SOSPage({super.key});
@@ -18,11 +22,15 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
   TextEditingController messageController = TextEditingController();
   bool isAnimating = false;
   final AudioPlayer _audioPlayer = AudioPlayer();
+  final _telephonySMS = TelephonySMS();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final LocationService _locationService = LocationService();
+
+
 
   @override
   void initState() {
     super.initState();
-
     _animationController = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
@@ -39,7 +47,7 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
     );
   }
 
-  void _triggerSOS() async {
+  Future<void> _triggerSOS() async {
     if (!isAnimating) {
       setState(() {
         isAnimating = true;
@@ -47,42 +55,84 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
       _animationController.forward();
     }
 
-   try {
-    // Load and play the audio file
-    await _audioPlayer.stop(); // Stop any previously playing audio
-    await _audioPlayer.setSource(AssetSource('audio/test.mp3')); // Load the file
-    await _audioPlayer.resume(); // Play the file
-  } catch (e) {
-   Fluttertoast.showToast(
-        msg: "Error loading audio",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
+    // Play emergency sound
+    await _audioPlayer.stop();
+    await _audioPlayer.setSource(AssetSource('audio/test.mp3'));
+    await _audioPlayer.resume();
+
+    // Fetch user location
+    Map<String, double>? locationData = await _locationService.getCurrentLocation();
+    String locationMessage = locationData != null
+        ? "My location: https://www.google.com/maps/search/?api=1&query=${locationData["latitude"]}%2C${locationData["longitude"]}"
+        : "Location unavailable";
+
+    // Fetch emergency contacts from Firestore
+    String message = messageController.text.trim().isNotEmpty
+        ? messageController.text
+        : "Emergency! I need help!";
+    message += "\n$locationMessage";
+
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) {
+        Fluttertoast.showToast(
+          msg: "User not logged in!",
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+        return;
+      }
+
+      String userEmail = user.email!;
+
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: userEmail)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        Fluttertoast.showToast(
+          msg: "No user found in the database!",
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+        return;
+      }
+
+      DocumentSnapshot userDoc = querySnapshot.docs.first;
+      List<dynamic>? contacts = userDoc.get('emergencyContacts');
+
+      if (contacts != null && contacts.isNotEmpty) {
+        List<Future<void>> smsFutures = [];
+
+        for (String phoneNumber in contacts) {
+          smsFutures
+              .add(_telephonySMS.sendSMS(phone: phoneNumber, message: message));
+        }
+        await Future.wait(smsFutures); // Wait for all SMS tasks to complete
+
+        Fluttertoast.showToast(
+          msg: "SOS message sent to emergency contacts!",
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+        );
+      } else {
+        Fluttertoast.showToast(
+          msg: "No emergency contacts found!",
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Error sending SOS: $e",
         backgroundColor: Colors.red,
         textColor: Colors.white,
-        fontSize: 16.0
-    );
-  }
-    // Show popup message
-    Future.delayed(const Duration(seconds: 1), () {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("SOS Alert Sent!"),
-          content: const Text("Help is on the way! Stay calm."),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("OK", style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        ),
       );
-    });
+    }
 
-    // Stop animation after 5 seconds
-    Future.delayed(const Duration(seconds: 5), () {
+    // Stop animation after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
       setState(() {
         isAnimating = false;
       });
@@ -112,7 +162,10 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
                 children: [
                   const Text(
                     "Emergency SOS",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFF833AB4)),
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF833AB4)),
                   ),
                   const SizedBox(height: 20),
                   TextField(
@@ -174,16 +227,15 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
                 ],
               ),
             ),
-            // Chat Widget at the bottom-right corner
-            Positioned(
+          Positioned(
               bottom: 20,
-              right: 20,
+              left: 20,
               child: FloatingActionButton(
-                onPressed: () {
-                  // Chat functionality to be implemented
+                onPressed: () async {
+                  await _telephonySMS.requestPermission();
                 },
                 backgroundColor: const Color(0xFF833AB4),
-                child: const Icon(Icons.chat, color: Colors.white),
+                child: const Icon(Icons.approval, color: Colors.white),
               ),
             ),
           ],

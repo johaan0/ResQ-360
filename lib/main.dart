@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => const LaunchPage(),
         '/login': (context) => const LoginPage(),
         '/home': (context) => const HomePage(),
-        '/sos': (context) => const SOSPage(),
+        '/sos': (context) => SOSPage(),
         '/volunteer_registration': (context) => VolunteerRegistrationPage(),
         '/profile': (context) => ProfilePage(),
         '/about': (context) => AboutPage(),

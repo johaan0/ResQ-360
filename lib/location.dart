@@ -2,9 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
+
+class LocationService {
+  Future<Map<String, double>?> getCurrentLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      return {
+        "latitude": position.latitude,
+        "longitude": position.longitude
+      };
+    } catch (e) {
+      print("Error getting location: $e");
+      return null;
+    }
+  }
+}
 
 class UserLocationMap extends StatefulWidget {
+  const UserLocationMap({super.key});
+
   @override
   _UserLocationMapState createState() => _UserLocationMapState();
 }
@@ -18,12 +35,11 @@ class _UserLocationMapState extends State<UserLocationMap> {
   void initState() {
     super.initState();
     _mapController = MapController(); // Initialize the controller
-    _getUserLocation();
+    _updateUserLocation();
   }
 
- 
-
-   Future<void> _getUserLocation() async {
+  /// This function gets the user's location and updates the map
+  Future<void> _updateUserLocation() async {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -33,19 +49,35 @@ class _UserLocationMapState extends State<UserLocationMap> {
       return;
     }
 
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
 
-    // Get current location
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+      setState(() {
+        _currentLocation = LatLng(position.latitude, position.longitude);
+        _isLoading = false;
+      });
 
-    setState(() {
-      _currentLocation = LatLng(position.latitude, position.longitude);
-      _isLoading = false;
-    });
+      if (_mapController != null) {
+        _mapController!.move(_currentLocation!, 15.0);
+      }
+    } catch (e) {
+      print("Error getting location: $e");
+    }
+  }
 
-    // Ensure mapController is not null before calling move()
-    if (_mapController != null && _currentLocation != null) {
-      _mapController!.move(_currentLocation!, 20.0);
+  /// This function returns the latitude and longitude for external use (e.g., SOS message)
+  Future<Map<String, double>?> getCurrentLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      return {
+        "latitude": position.latitude,
+        "longitude": position.longitude
+      };
+    } catch (e) {
+      print("Error getting location: $e");
+      return null;
     }
   }
 
@@ -64,9 +96,8 @@ class _UserLocationMapState extends State<UserLocationMap> {
               children: [
                 // OpenStreetMap layer
                 TileLayer(
-  urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-),
-
+                  urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                ),
 
                 // Marker for user's location
                 if (_currentLocation != null)
@@ -83,7 +114,7 @@ class _UserLocationMapState extends State<UserLocationMap> {
               ],
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _getUserLocation,
+        onPressed: _updateUserLocation,
         child: Icon(Icons.my_location),
       ),
     );

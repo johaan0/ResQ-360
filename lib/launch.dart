@@ -13,7 +13,7 @@ class _LaunchPageState extends State<LaunchPage> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 5), () {
+    Timer(const Duration(seconds: 2), () {
       Navigator.pushReplacementNamed(context, '/login');
     });
   }

@@ -4,7 +4,7 @@ import 'package:flutter_pdfview/flutter_pdfview.dart';
 class PdfViewerScreen extends StatelessWidget {
   final String pdfPath;
 
-  PdfViewerScreen({required this.pdfPath});
+  const PdfViewerScreen({super.key, required this.pdfPath});
 
   @override
   Widget build(BuildContext context) {
