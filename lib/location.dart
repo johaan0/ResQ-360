@@ -84,14 +84,14 @@ class _UserLocationMapState extends State<UserLocationMap> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("User Location Map")),
+      appBar: AppBar(title: Text("Your Current Location")),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : FlutterMap(
               mapController: _mapController,
               options: MapOptions(
-                center: _currentLocation ?? LatLng(0, 0), // Default if no location
-                zoom: 15.0,
+                initialCenter: _currentLocation ?? LatLng(0, 0), // Default if no location
+                initialZoom: 16.0,
               ),
               children: [
                 // OpenStreetMap layer

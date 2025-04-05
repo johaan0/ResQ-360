@@ -5,6 +5,7 @@ import 'dart:io';
 import 'main_layout.dart';
 import 'cloudinary_service.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class VolunteerRegistrationPage extends StatefulWidget {
   const VolunteerRegistrationPage({super.key});
@@ -23,14 +24,10 @@ class _VolunteerRegistrationPageState extends State<VolunteerRegistrationPage> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
-  final List<String> volunteerRoles = [
-    "Emergency Response",
-    "Logistics Support",
-    "Food & Water Distribution",
-    "Medical Assistance",
-    "Shelter Management",
-    "Rescue Operations"
+  final List<String> volunteerRoles = ["Emergency Response", "Logistics Support", "Food & Water Distribution", "Medical Assistance", "Shelter Management", "Rescue Operations"
+     
   ];
 
   final List<String> locations = [
@@ -89,6 +86,9 @@ class _VolunteerRegistrationPageState extends State<VolunteerRegistrationPage> {
         'timestamp': FieldValue.serverTimestamp(),
       });
 
+      // Subscribe to volunteer topic
+      await _messaging.subscribeToTopic("volunteers");
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Your registration is being analyzed! We will get to you soon"), backgroundColor: Colors.green),
       );
@@ -113,23 +113,22 @@ class _VolunteerRegistrationPageState extends State<VolunteerRegistrationPage> {
   }
 
   Future<String> _uploadKyc() async {
-  CloudinaryService cloudinaryService = CloudinaryService();
-  return await cloudinaryService.uploadFile(kycFile!);
-}
-
+    CloudinaryService cloudinaryService = CloudinaryService();
+    return await cloudinaryService.uploadFile(kycFile!);
+  }
 
   Future<void> _pickKycDocument() async {
-  FilePickerResult? result = await FilePicker.platform.pickFiles(
-    type: FileType.custom,
-    allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'], // Allow both images and PDFs
-  );
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'], // Allow both images and PDFs
+    );
 
-  if (result != null) {
-    setState(() {
-      kycFile = File(result.files.single.path!);
-    });
+    if (result != null) {
+      setState(() {
+        kycFile = File(result.files.single.path!);
+      });
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {

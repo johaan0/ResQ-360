@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_application_1/send_notification_button.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'main_layout.dart';
 import 'location.dart'; // Import Location Page
+import 'sos.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -24,7 +27,7 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             children: List.generate(10, (index) {
               final items = [
-                {'icon': Icons.local_police, 'label': "Police"},
+                {'icon': Icons.run_circle_rounded, 'label': "Request Volunteer Support"},
                 {'icon': Icons.local_fire_department, 'label': "Fire"},
                 {'icon': Icons.local_hospital, 'label': "Medical"},
                 {'icon': Icons.waves, 'label': "Disaster"},
@@ -65,11 +68,27 @@ class _HomePageState extends State<HomePage> {
   Widget _buildEmergencyButton(IconData icon, String label, int index) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact(); // Vibration feedback
+        HapticFeedback.heavyImpact(); // Vibration feedback
         if (label == "Location") {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => UserLocationMap ()),
+          );
+        }
+      
+        HapticFeedback.lightImpact(); // Vibration feedback
+        if (label == "SOS") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => SOSPage ()),
+          );
+        }
+
+         HapticFeedback.lightImpact(); // Vibration feedback
+        if (label == "Request Volunteer Support") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => RequestSupportPage() ),
           );
         }
       },

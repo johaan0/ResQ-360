@@ -10,7 +10,6 @@ import 'login.dart'; // Import your login page
 import 'profile.dart';
 import 'location.dart';
 
-
 void main() async {
   WidgetsFlutterBinding
       .ensureInitialized(); // Ensures Flutter is initialized before Firebase
@@ -44,7 +43,7 @@ class MyApp extends StatelessWidget {
         '/volunteer_registration': (context) => VolunteerRegistrationPage(),
         '/profile': (context) => ProfilePage(),
         '/about': (context) => AboutPage(),
-        '/location':(context)=>UserLocationMap()
+        '/location': (context) => UserLocationMap(),
       },
     );
   }
