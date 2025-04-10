@@ -205,7 +205,7 @@ class _VolunteerRegistrationPageState extends State<VolunteerRegistrationPage> {
                     TextButton.icon(
                       onPressed: _pickKycDocument,
                       icon: const Icon(Icons.upload_file, color: Colors.black),
-                      label: const Text("Upload KYC Document", style: TextStyle(color: Colors.black)),
+                      label: const Text("Upload KYC Document with Photo", style: TextStyle(color: Colors.black)),
                     ),
                     if (kycFile != null) Text("KYC Document Selected", style: TextStyle(color: Colors.green)),
                     const SizedBox(height: 20),

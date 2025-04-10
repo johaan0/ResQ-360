@@ -4,6 +4,7 @@
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.INTERNET"/>
 
 <uses-permission android:name="android.permission.SEND_SMS"/>
 
@@ -13,6 +14,9 @@
         android:label="ResQ 360"
        
         android:icon="@mipmap/ic_launcher">
+
+        <meta-data android:name="com.google.android.geo.API_KEY"
+           android:value="AIzaSyC1tSvmENNjKFJrvaSTjUtQER9r1vXr-NM"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

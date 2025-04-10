@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_application_1/notifications.dart';
 
 class MainLayout extends StatefulWidget {
   final Widget body;
@@ -65,9 +66,10 @@ class _MainLayoutState extends State<MainLayout> {
     Navigator.pushReplacementNamed(context, '/home');
   }
 
-  void _logout(BuildContext context) {
-    Navigator.pushReplacementNamed(context, '/login');
-  }
+ void _logout(BuildContext context) async {
+  await FirebaseAuth.instance.signOut(); // Sign out the user
+  Navigator.pushReplacementNamed(context, '/login'); // Navigate to login screen
+}
 
   void _navigateToSOS(BuildContext context) {
     Navigator.pushNamed(context, '/sos');
@@ -96,22 +98,32 @@ class _MainLayoutState extends State<MainLayout> {
             ),
           ),
           child: AppBar(
-            title: const Text(
-              "ResQ 360",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.notifications, color: Colors.white),
-                onPressed: () {},
-              ),
-            ],
-          ),
+  title: const Text(
+    "ResQ 360",
+    style: TextStyle(
+      color: Colors.white,
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+  backgroundColor: Colors.transparent,
+  elevation: 0,
+  iconTheme: const IconThemeData(
+    color: Color(0xFFFFFFFF), // Change this to any color you like
+  ),
+  actions: [
+    IconButton(
+  icon: const Icon(Icons.notifications, color: Colors.white),
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NotificationsPage()),
+    );
+  },
+),
+
+  ],
+),
+
         ),
       ),
       drawer: Drawer(

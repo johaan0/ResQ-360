@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_application_1/about.dart';
+import 'package:flutter_application_1/help_line.dart';
+import 'package:flutter_application_1/police.dart';
 import 'package:flutter_application_1/send_notification_button.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'main_layout.dart';
@@ -28,15 +31,15 @@ class _HomePageState extends State<HomePage> {
             children: List.generate(10, (index) {
               final items = [
                 {'icon': Icons.run_circle_rounded, 'label': "Request Volunteer Support"},
-                {'icon': Icons.local_fire_department, 'label': "Fire"},
+                {'icon': Icons.phone, 'label': "HelpLine"},
                 {'icon': Icons.local_hospital, 'label': "Medical"},
-                {'icon': Icons.waves, 'label': "Disaster"},
+                {'icon': Icons.local_police, 'label': "Police"},
                 {'icon': Icons.woman, 'label': "Women"},
                 {'icon': Icons.child_care, 'label': "Child"},
                 {'icon': Icons.location_pin, 'label': "Location"},
                 {'icon': Icons.train, 'label': "Railway"},
                 {'icon': Icons.sos, 'label': "SOS"},
-                {'icon': Icons.help, 'label': "Others"},
+                {'icon': Icons.help, 'label': "About"},
               ];
 
               return VisibilityDetector(
@@ -89,6 +92,27 @@ class _HomePageState extends State<HomePage> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => RequestSupportPage() ),
+          );
+        }
+        HapticFeedback.lightImpact(); // Vibration feedback
+        if (label == "HelpLine") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => HelplineUserPage() ),
+          );
+        }
+        HapticFeedback.lightImpact(); // Vibration feedback
+        if (label == "About") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AboutPage() ),
+          );
+        }
+         HapticFeedback.lightImpact(); // Vibration feedback
+        if (label == "Police") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => NearbyPoliceStationsPage() ),
           );
         }
       },

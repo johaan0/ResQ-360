@@ -71,7 +71,7 @@ class _RequestSupportPageState extends State<RequestSupportPage>
           "longitude": position.longitude,
         },
         "status": "not fulfilled",
-        "username": userData['name'] ?? "Anonymous",
+        "username": userData['name'],
         "email": user.email ?? "No Email",
         "timestamp": FieldValue.serverTimestamp(),
       });

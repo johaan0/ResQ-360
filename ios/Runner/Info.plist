@@ -57,6 +57,10 @@
     <key>NSLocationAlwaysUsageDescription</key>
       <string>We need your location for better accuracy</string>
 
+	<key>NSLocationWhenInUseUsageDescription</key>
+    <string>We need your location to find nearby police stations.</string>
+
+
 
 </dict>
 </plist>

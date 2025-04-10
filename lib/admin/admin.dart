@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'adminVolunteerRequests.dart'; // Import the volunteer requests page
+import 'package:flutter_application_1/admin/heatmap.dart';
+import 'adminVolunteerRequests.dart'; // Volunteer requests page
+import 'help_requests.dart';
+import 'helpline_admin.dart';
 
 class AdminPage extends StatefulWidget {
   const AdminPage({super.key});
@@ -13,12 +16,15 @@ class AdminPage extends StatefulWidget {
 class _AdminPageState extends State<AdminPage> {
   bool isAdmin = false;
   int userCount = 0;
+  int approvedVolunteers = 0;
+  int declinedVolunteers = 0;
 
   @override
   void initState() {
     super.initState();
     checkAdmin();
     fetchUserCount();
+    fetchVolunteerStatus();
   }
 
   void checkAdmin() async {
@@ -40,19 +46,41 @@ class _AdminPageState extends State<AdminPage> {
     Navigator.pushReplacementNamed(context, '/login');
   }
 
-   Future<void> fetchUserCount() async {
-  try {
-    QuerySnapshot usersSnapshot =
-        await FirebaseFirestore.instance.collection("users").get();
-    print("Fetched users: ${usersSnapshot.docs.length}");
-    setState(() {
-      userCount = usersSnapshot.docs.length;
-    });
-  } catch (e) {
-    print("Error fetching user count: $e");
+  Future<void> fetchUserCount() async {
+    try {
+      QuerySnapshot usersSnapshot =
+          await FirebaseFirestore.instance.collection("users").get();
+      setState(() {
+        userCount = usersSnapshot.docs.length;
+      });
+    } catch (e) {
+      print("Error fetching user count: $e");
+    }
   }
-}
 
+  Future<void> fetchVolunteerStatus() async {
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('volunteers')
+          .get();
+
+      int approved = 0;
+      int declined = 0;
+
+      for (var doc in snapshot.docs) {
+        String status = doc['status'];
+        if (status == 'approved') approved++;
+        if (status == 'declined') declined++;
+      }
+
+      setState(() {
+        approvedVolunteers = approved;
+        declinedVolunteers = declined;
+      });
+    } catch (e) {
+      print("Error fetching volunteer data: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,131 +89,77 @@ class _AdminPageState extends State<AdminPage> {
         title: const Text(
           'ResQ 360 Admin Dashboard',
           style: TextStyle(
-              color: Color.fromARGB(255, 255, 255, 255),
-              fontWeight: FontWeight.bold),
+              color: Colors.white, fontWeight: FontWeight.bold),
         ),
+        actions: [
+  PopupMenuButton<String>(
+    onSelected: (value) {
+      if (value == 'logout') {
+        _logout();
+      } else if (value == 'refresh') {
+        fetchUserCount(); // Re-fetch users
+        fetchVolunteerStatus(); // Re-fetch volunteers
+        setState(() {}); // Refresh UI
+      }
+    },
+    itemBuilder: (BuildContext context) {
+      return [
+        const PopupMenuItem<String>(
+          value: 'refresh',
+          child: ListTile(
+            leading: Icon(Icons.refresh),
+            title: Text('Refresh'),
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'logout',
+          child: ListTile(
+            leading: Icon(Icons.logout),
+            title: Text('Logout'),
+          ),
+        ),
+      ];
+            },
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+          ),
+        ],
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF833AB4), Color(0xFFF56040)], // Instagram theme
+              colors: [Color(0xFF833AB4), Color(0xFFF56040)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-          ),
-        ),
-      ),
-      drawer: Drawer(
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color.fromARGB(255, 255, 255, 255),
-                Color.fromARGB(255, 255, 255, 255),
-                Color.fromARGB(255, 255, 255, 255)
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF833AB4), Color(0xFFF56040)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const CircleAvatar(
-                      backgroundColor: Colors.white,
-                      radius: 40,
-                      child: Icon(Icons.admin_panel_settings,
-                          size: 40, color: Color(0xFF833AB4)),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      "Admin Panel",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-              ListTile(
-                leading:
-                    const Icon(Icons.volunteer_activism, color: Colors.purple),
-                title: const Text("Volunteer Requests",
-                    style: TextStyle(color: Colors.purple)),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => AdminVolunteerRequestsPage()),
-                  );
-                },
-              ),
-              const Divider(color: Colors.white54),
-              ListTile(
-                leading: const Icon(Icons.logout, color: Colors.purple),
-                title: const Text("Logout",
-                    style: TextStyle(color: Colors.purple)),
-                onTap: _logout,
-              ),
-            ],
           ),
         ),
       ),
       body: isAdmin
-          ? Center(
+          ? SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
                     'Welcome, Admin!',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 5,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          "Total Registered Users",
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          userCount.toString(),
-                          style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue),
-                        ),
-                      ],
-                    ),
+                    style: TextStyle( color: Color(0xFF833AB4),fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 20),
-                  ElevatedButton.icon(
+                  _buildCard(
+                    title: "Total Registered Users",
+                    value: userCount.toString(),
+                    color: Colors.blue,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildCard(
+                    title: "Volunteers",
+                    value:
+                        "Approved: $approvedVolunteers\nDeclined: $declinedVolunteers",
+                    color: Colors.deepPurple,
+                  ),
+                  const SizedBox(height: 24),
+                  _buildButton(
+                    icon: Icons.volunteer_activism,
+                    label: "Volunteer Requests",
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -193,28 +167,93 @@ class _AdminPageState extends State<AdminPage> {
                             builder: (context) => AdminVolunteerRequestsPage()),
                       );
                     },
-                    icon: const Icon(
-                      Icons.volunteer_activism,
-                      color: Colors.white,
-                    ),
-                    label: const Text("Volunteer Requests"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF833AB4),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 100, vertical: 30), // Long rectangle
-                      textStyle: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(10), // Rectangular shape
-                      ),
-                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildButton(
+                    icon: Icons.help,
+                    label: "Help Requests",
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => HelpRequestsPage()),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildButton(
+                    icon: Icons.map,
+                    label: "Heatmap",
+                    onPressed: () {
+                     Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => HelpRequestHeatmapPage()),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildButton(
+                    icon: Icons.phone,
+                    label: "Edit Helpline Numbers",
+                    onPressed: () {
+                       Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => HelplineEditorPage()),
+                      );
+                    },
                   ),
                 ],
               ),
             )
           : const Center(child: Text('Access Denied')),
+    );
+  }
+
+  Widget _buildCard({required String title, required String value, required Color color}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(2, 2)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style: const TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+          const SizedBox(height: 10),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildButton({required IconData icon, required String label, required VoidCallback onPressed}) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, color: Colors.white),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF833AB4),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        elevation: 3,
+      ),
     );
   }
 }
