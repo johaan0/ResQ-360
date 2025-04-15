@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 Future<void> sendHelpRequest() async {
-  final url = Uri.parse("http://192.168.1.4:5000/send_notification");
+  final url = Uri.parse("https://resq360-backend.onrender.com/send_notification");
+
 
   final response = await http.post(
     url,

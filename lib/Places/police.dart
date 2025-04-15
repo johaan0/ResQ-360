@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
-import 'main_layout.dart'; // Import your main layout
+import '../main_layout.dart'; // Import your main layout
 
 class NearbyPoliceStationsPage extends StatefulWidget {
   @override

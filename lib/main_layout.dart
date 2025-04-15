@@ -88,7 +88,7 @@ class _MainLayoutState extends State<MainLayout> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56.0),
+        preferredSize: const Size.fromHeight(50.0),
         child: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(

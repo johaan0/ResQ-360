@@ -41,7 +41,7 @@ class _LaunchPageState extends State<LaunchPage>
 
     _controller.forward();
 
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 4), () {
       // Check Firebase auth session
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {

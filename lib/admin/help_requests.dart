@@ -8,27 +8,43 @@ class HelpRequestsPage extends StatefulWidget {
 
 class _HelpRequestsPageState extends State<HelpRequestsPage> {
   late Future<List<Map<String, dynamic>>> helpRequests;
+  List<Map<String, dynamic>> displayedRequests = [];
 
   Future<List<Map<String, dynamic>>> fetchHelpRequests() async {
-    QuerySnapshot snapshot =
-        await FirebaseFirestore.instance.collection('help_request').get();
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('help_request')
+        .orderBy('timestamp', descending: true)
+        .get();
 
     return snapshot.docs.map((doc) {
-      return doc.data() as Map<String, dynamic>;
+      return {
+        'id': doc.id, // For unique identification
+        ...doc.data() as Map<String, dynamic>,
+      };
     }).toList();
   }
 
   @override
   void initState() {
     super.initState();
-    helpRequests = fetchHelpRequests();
+    helpRequests = fetchHelpRequests().then((data) {
+      displayedRequests = data;
+      return data;
+    });
+  }
+
+  void removeRequest(String id) {
+    setState(() {
+      displayedRequests.removeWhere((req) => req['id'] == id);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('All Help Requests'),
+        title: const Text('All Help Requests'),
+        backgroundColor: Colors.purple,
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: helpRequests,
@@ -40,16 +56,14 @@ class _HelpRequestsPageState extends State<HelpRequestsPage> {
             return Center(child: Text("Error: ${snapshot.error}"));
           }
 
-          final requests = snapshot.data ?? [];
-
-          if (requests.isEmpty) {
+          if (displayedRequests.isEmpty) {
             return const Center(child: Text("No help requests found."));
           }
 
           return ListView.builder(
-            itemCount: requests.length,
+            itemCount: displayedRequests.length,
             itemBuilder: (context, index) {
-              final req = requests[index];
+              final req = displayedRequests[index];
               final location = req['location'] ?? {};
               final lat = location['latitude'] ?? 'N/A';
               final lon = location['longitude'] ?? 'N/A';
@@ -58,18 +72,34 @@ class _HelpRequestsPageState extends State<HelpRequestsPage> {
                 margin: const EdgeInsets.all(10),
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Stack(
                     children: [
-                      Text("👤 Username: ${req['username'] ?? 'Anonymous'}",
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text("📧 Email: ${req['email'] ?? 'N/A'}"),
-                      Text("🆘 Type of Support: ${req['type_of_support'] ?? ''}"),
-                      Text("📝 Description: ${req['description'] ?? ''}"),
-                      Text("📍 Location: ($lat, $lon)"),
-                      Text("📅 Time: ${req['timestamp'] ?? 'N/A'}"),
-                      Text("✅ Status: ${req['status']}"),
-                      Text("👮 Volunteer: ${req['assigned_volunteer'] ?? 'Not assigned'}"),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 30.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Username: ${req['username'] ?? 'Anonymous'}",
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold)),
+                            Text("Email: ${req['email'] ?? 'N/A'}"),
+                            Text("Type of Support: ${req['type_of_support'] ?? ''}"),
+                            Text("Description: ${req['description'] ?? ''}"),
+                            Text("Location: ($lat, $lon)"),
+                            Text("Time: ${req['timestamp'] ?? 'N/A'}"),
+                            Text("Status: ${req['status']}"),
+                            Text("Volunteer: ${req['assigned_volunteer'] ?? 'Not assigned'}"),
+                          ],
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: IconButton(
+                          icon: const Icon(Icons.close, color: Colors.red),
+                          onPressed: () => removeRequest(req['id']),
+                        ),
+                      ),
                     ],
                   ),
                 ),
