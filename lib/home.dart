@@ -7,6 +7,7 @@ import 'package:flutter_application_1/Places/help_line.dart';
 import 'package:flutter_application_1/Places/police.dart';
 import 'package:flutter_application_1/Places/hospital.dart';
 import 'package:flutter_application_1/request_support.dart';
+import 'package:flutter_application_1/user_requests_screen.dart';
 import 'package:flutter_application_1/volunteer_registration.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'main_layout.dart';
@@ -21,7 +22,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<bool> _isVisible = List.generate(9, (_) => false);
+  final List<bool> _isVisible = List.generate(10, (_) => false);
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
@@ -50,6 +51,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final items = [
       {'icon': Icons.run_circle_rounded, 'label': "Request Volunteer Support"},
+      {'icon': Icons.check_circle_outline_rounded, 'label': "Requested Supports"},
       {'icon': Icons.phone, 'label': "HelpLine"},
       {'icon': Icons.local_hospital, 'label': "Medical"},
       {'icon': Icons.local_police, 'label': "Police"},
@@ -166,6 +168,9 @@ class _HomePageState extends State<HomePage> {
         }
         if (label == "Police") {
           Navigator.push(context, MaterialPageRoute(builder: (context) => NearbyPoliceStationsPage()));
+        }
+        if (label == "Requested Supports") {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => UserRequestsScreen()));
         }
       },
       child: Card(

@@ -4,14 +4,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
 class ChatScreen extends StatefulWidget {
-   final String userEmail;
-   final String volunteerEmail;
+  final String userEmail;
+  final String volunteerEmail;
 
   const ChatScreen({
     super.key,
     required this.userEmail,
     required this.volunteerEmail,
   });
+
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
@@ -21,17 +22,28 @@ class _ChatScreenState extends State<ChatScreen> {
   String? volunteerEmail;
   late String chatId;
   bool isTyping = false;
+  String? displayName;
 
   @override
   void initState() {
     super.initState();
     volunteerEmail = FirebaseAuth.instance.currentUser?.email;
-    chatId = generateChatId(widget.userEmail, volunteerEmail ?? '');
+    chatId = generateChatId(widget.userEmail, widget.volunteerEmail);
     _controller.addListener(() {
       setTypingStatus(_controller.text.isNotEmpty);
     });
-    createChatMetadata(); // Ensure chat doc exists
+    createChatMetadata();
     markMessagesAsRead();
+    fetchDisplayName();
+  }
+
+  void fetchDisplayName() {
+    final currentUserEmail = FirebaseAuth.instance.currentUser?.email;
+    setState(() {
+      displayName = currentUserEmail == widget.userEmail
+          ? widget.volunteerEmail
+          : widget.userEmail;
+    });
   }
 
   String generateChatId(String email1, String email2) {
@@ -48,7 +60,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (!chatDoc.exists) {
       await chatDocRef.set({
         'userEmail': widget.userEmail,
-        'volunteerEmail': volunteerEmail,
+        'volunteerEmail': widget.volunteerEmail,
         'lastUpdated': FieldValue.serverTimestamp(),
       });
     } else {
@@ -111,9 +123,30 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Chat with ${widget.userEmail}"),
-        backgroundColor: const Color(0xFF833ab4),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: AppBar(
+          automaticallyImplyLeading: true,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF833ab4), Color(0xFFe91e63)],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
+          ),
+          title: Text(
+            displayName ?? '',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          iconTheme: const IconThemeData(color: Colors.white),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
       ),
       body: Column(
         children: [
@@ -126,21 +159,27 @@ class _ChatScreenState extends State<ChatScreen> {
                   .orderBy('timestamp', descending: false)
                   .snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
                 final messages = snapshot.data!.docs;
                 return ListView.builder(
-                  padding: EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(8),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final msg = messages[index].data() as Map<String, dynamic>;
                     final isMe = msg['sender'] == volunteerEmail;
                     return Align(
-                      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                      alignment:
+                          isMe ? Alignment.centerRight : Alignment.centerLeft,
                       child: Container(
-                        margin: EdgeInsets.symmetric(vertical: 4),
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: isMe ? Colors.purple[200] : Colors.grey[300],
+                          color: isMe
+                              ? Colors.purple[200]
+                              : Colors.redAccent[100], // Red for user
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(
@@ -153,10 +192,12 @@ class _ChatScreenState extends State<ChatScreen> {
                                 if (msg['timestamp'] != null)
                                   Text(
                                     formatTimestamp(msg['timestamp']),
-                                    style: TextStyle(fontSize: 10, color: Colors.black54),
+                                    style: const TextStyle(
+                                        fontSize: 10, color: Colors.black54),
                                   ),
                                 if (isMe && msg['read'] == true)
-                                  Icon(Icons.done_all, size: 16, color: Colors.blue)
+                                  const Icon(Icons.done_all,
+                                      size: 16, color: Colors.blue)
                               ],
                             ),
                           ],
@@ -176,7 +217,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 .doc(chatId)
                 .snapshots(),
             builder: (context, snapshot) {
-              if (!snapshot.hasData) return SizedBox();
+              if (!snapshot.hasData) return const SizedBox();
               final data = snapshot.data!.data() as Map<String, dynamic>?;
 
               final typingKey = '${widget.userEmail}_typing';
@@ -187,12 +228,12 @@ class _ChatScreenState extends State<ChatScreen> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       "${widget.userEmail} is typing...",
-                      style: TextStyle(color: Colors.grey),
+                      style: const TextStyle(color: Colors.grey),
                     ),
                   ),
                 );
               }
-              return SizedBox();
+              return const SizedBox();
             },
           ),
 
@@ -205,12 +246,13 @@ class _ChatScreenState extends State<ChatScreen> {
                     controller: _controller,
                     decoration: InputDecoration(
                       hintText: 'Type your message...',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.send, color: Color(0xFF833ab4)),
+                  icon: const Icon(Icons.send, color: Color(0xFF833ab4)),
                   onPressed: () {
                     sendMessage(_controller.text);
                     markMessagesAsRead();

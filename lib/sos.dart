@@ -235,7 +235,7 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
                   await _telephonySMS.requestPermission();
                 },
                 backgroundColor: const Color(0xFF833AB4),
-                child: const Icon(Icons.approval, color: Colors.white),
+                child: const Icon(Icons.chat, color: Colors.white),
               ),
             ),
           ],
