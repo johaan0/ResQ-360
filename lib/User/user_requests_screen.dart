@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../volunteer/chat_screen.dart';
+import '../../volunteer/chat_screen.dart';
 
 class UserRequestsScreen extends StatelessWidget {
   const UserRequestsScreen({super.key});

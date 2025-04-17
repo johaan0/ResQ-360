@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
-import 'main_layout.dart';
+import '../main_layout.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});

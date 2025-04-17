@@ -250,10 +250,10 @@ class _AdminPageState extends State<AdminPage> {
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF833AB4),
         foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        elevation: 3,
+        elevation: 5,
       ),
     );
   }

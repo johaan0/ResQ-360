@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:animate_do/animate_do.dart';
-import 'main_layout.dart';
+import '../main_layout.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:telephony_sms/telephony_sms.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_application_1/location.dart';
+import 'package:flutter_application_1/User/location.dart';
 
 class SOSPage extends StatefulWidget {
   const SOSPage({super.key});

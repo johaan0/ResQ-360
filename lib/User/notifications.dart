@@ -98,11 +98,27 @@ class NotificationsPage extends StatelessWidget {
             ),
           ),
           child: AppBar(
-            title: const Text("Notifications",
-                style: TextStyle(color: Colors.white)),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
+        automaticallyImplyLeading: true,
+        leading: const BackButton(color: Colors.white),
+        title: const Text(
+          "Notifications",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
           ),
+        ),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.purple, Colors.red],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
         ),
       ),
       body: StreamBuilder<QuerySnapshot>(

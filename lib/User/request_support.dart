@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter/animation.dart';
-import 'push_notification_service.dart';
-import 'main_layout.dart';
+import '../Service/push_notification_service.dart';
+import '../main_layout.dart';
 
 class RequestSupportPage extends StatefulWidget {
   const RequestSupportPage({super.key});

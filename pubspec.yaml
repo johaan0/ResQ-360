@@ -111,6 +111,10 @@ flutter:
       - assets/poster1.png
       - assets/poster2.png
       - assets/poster3.png
+      - assets/animations/tick.json
+      - assets/animations/reject.json
+      - assets/animations/reject1.json
+      - assets/animations/pending.json
 
 flutter_launcher_icons:
   android: true

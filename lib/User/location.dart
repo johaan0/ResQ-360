@@ -84,7 +84,29 @@ class _UserLocationMapState extends State<UserLocationMap> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Your Current Location")),
+      appBar: AppBar(
+  automaticallyImplyLeading: true,
+  leading: BackButton(color: Colors.white),
+  title: Text(
+    "Your Current Location",
+    style: TextStyle(
+      color: Colors.white,
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+  flexibleSpace: Container(
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        colors: [Colors.purple, Colors.red],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+    ),
+  ),
+  backgroundColor: Colors.transparent,
+  elevation: 0,
+),
+
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : FlutterMap(

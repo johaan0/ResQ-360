@@ -2,9 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'home.dart'; // Import your Home page
-import 'registration_page.dart';
-import 'admin/admin.dart';
+import 'package:flutter_application_1/Auth/forgot_password_page.dart';
+import 'package:flutter_application_1/Auth/registration_page.dart';
+import '../User/home.dart'; // Import your Home page
+import '../admin/admin.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 
@@ -230,7 +231,20 @@ void _showErrorMessage(String message) {
                             color: Color(0xFF673AB7),
                           ),
                         ),
+                        
                       ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ForgotPasswordPage()),
+    );
+                         },
+                        child: Text(
+                        "Forgot Password?",
+                        style: TextStyle(color: const Color(0xFF673AB7)),
+                           ),
+                       ),
                     ],
                   ),
                 ),

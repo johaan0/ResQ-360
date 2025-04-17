@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_application_1/notifications.dart';
+import 'package:flutter_application_1/User/notifications.dart';
 
 class MainLayout extends StatefulWidget {
   final Widget body;

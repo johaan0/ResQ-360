@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_application_1/about.dart';
-import 'package:flutter_application_1/home.dart';
+import 'package:flutter_application_1/User/about.dart';
+import 'package:flutter_application_1/User/home.dart';
 import 'package:flutter_application_1/launch.dart';
-import 'package:flutter_application_1/notifications.dart';
-import 'package:flutter_application_1/sos.dart';
-import 'package:flutter_application_1/volunteer_registration.dart';
+import 'package:flutter_application_1/User/notifications.dart';
+import 'package:flutter_application_1/User/sos.dart';
+import 'package:flutter_application_1/volunteer/volunteer_registration.dart';
 import 'firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
-import 'login.dart'; // Import your login page
-import 'profile.dart';
-import 'location.dart';
+import 'Auth/login.dart'; // Import your login page
+import 'User/profile.dart';
+import 'User/location.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 

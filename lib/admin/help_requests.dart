@@ -43,9 +43,27 @@ class _HelpRequestsPageState extends State<HelpRequestsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('All Help Requests'),
-        backgroundColor: Colors.purple,
+  automaticallyImplyLeading: true,
+  leading: BackButton(color: Colors.white),
+  title: Text(
+    "All Help Requests",
+    style: TextStyle(
+      color: Colors.white,
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+  flexibleSpace: Container(
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        colors: [Colors.purple, Colors.red],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
       ),
+    ),
+  ),
+  backgroundColor: Colors.transparent,
+  elevation: 0,
+),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: helpRequests,
         builder: (context, snapshot) {
