@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:share_plus/share_plus.dart';
 
 class LocationService {
   Future<Map<String, double>?> getCurrentLocation() async {
@@ -65,6 +66,20 @@ class _UserLocationMapState extends State<UserLocationMap> {
       print("Error getting location: $e");
     }
   }
+
+  void _shareLocation() async {
+  if (_currentLocation != null) {
+    String googleMapsUrl =
+        "https://www.google.com/maps/search/?api=1&query=${_currentLocation!.latitude},${_currentLocation!.longitude}";
+    String message = "Here's my current location: $googleMapsUrl";
+
+    await Share.share(message);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Location not available yet')),
+    );
+  }
+}
 
   /// This function returns the latitude and longitude for external use (e.g., SOS message)
   Future<Map<String, double>?> getCurrentLocation() async {
@@ -135,10 +150,24 @@ class _UserLocationMapState extends State<UserLocationMap> {
                   ),
               ],
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _updateUserLocation,
-        child: Icon(Icons.my_location),
-      ),
+      floatingActionButton: Column(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    FloatingActionButton(
+      heroTag: 'location_btn',
+      onPressed: _updateUserLocation,
+      child: Icon(Icons.my_location),
+    ),
+    SizedBox(height: 10),
+    FloatingActionButton(
+      heroTag: 'share_btn',
+      onPressed: _shareLocation,
+      child: Icon(Icons.share),
+      backgroundColor: Colors.purple,
+    ),
+  ],
+),
+
     );
   }
 }

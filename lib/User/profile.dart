@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_application_1/Auth/login.dart';
 import '../main_layout.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -62,6 +63,57 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  // Show delete confirmation dialog
+  void _showDeleteConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Confirm Delete"),
+        content: const Text("Are you sure you want to permanently delete your account? This action cannot be undone."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(), // Close dialog
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop(); // Close dialog first
+              await _deleteAccount();
+            },
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Delete user account
+  Future<void> _deleteAccount() async {
+    try {
+      if (user != null) {
+        String uid = user!.uid;
+
+        // First delete user document from Firestore
+        await _firestore.collection("users").doc(uid).delete();
+
+        // Then delete Firebase Auth account
+        await user!.delete();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Account deleted successfully"), backgroundColor: Colors.red)
+        );
+
+        // Optional: Navigate to login page or splash after deletion
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginPage()));
+      }
+    } catch (e) {
+      print("Error deleting account: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to delete account"), backgroundColor: Colors.red)
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MainLayout(
@@ -88,7 +140,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               const SizedBox(height: 20),
               // Name Field
-              buildTextField("Full Name", nameController),
+              buildTextField("Full Name", nameController, isEditable: false),
               const SizedBox(height: 10),
               // Email Field (Non-Editable)
               buildTextField("Email", emailController, isEditable: false),
@@ -101,15 +153,13 @@ class _ProfilePageState extends State<ProfilePage> {
               // Emergency Contacts
               Column(
                 children: [
-                   for (int i = 0; i < 5; i++)...[
+                  for (int i = 0; i < 5; i++) ...[
                     buildTextField("Contact ${i + 1}", emergencyContacts[i]),
                     const SizedBox(height: 10),
-                   ]
-
+                  ]
                 ],
-              )
-              
-              ,const SizedBox(height: 10),
+              ),
+              const SizedBox(height: 10),
               // Save Button
               ElevatedButton(
                 onPressed: saveUserData,
@@ -119,6 +169,19 @@ class _ProfilePageState extends State<ProfilePage> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 child: const Text("Save Changes", style: TextStyle(color: Colors.white, fontSize: 18)),
+              ),
+              const SizedBox(height: 10),
+              // Delete Account Button
+              ElevatedButton(
+                onPressed: () {
+                  _showDeleteConfirmationDialog();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text("Delete Account", style: TextStyle(color: Colors.white, fontSize: 18)),
               ),
             ],
           ),

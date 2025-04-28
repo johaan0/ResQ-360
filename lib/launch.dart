@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:lottie/lottie.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LaunchPage extends StatefulWidget {
   const LaunchPage({super.key});
@@ -14,43 +15,56 @@ class LaunchPage extends StatefulWidget {
 class _LaunchPageState extends State<LaunchPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _fadeInAnimation;
-  late Animation<double> _scaleAnimation;
+  late Animation<double> _circleExpansion;
 
   @override
-  void initState() {
-    super.initState();
+void initState() {
+  super.initState();
 
-    // Subscribe to 'volunteers' topic (TEMP for testing)
-  FirebaseMessaging.instance.subscribeToTopic("volunteers");
+  _controller = AnimationController(
+    duration: const Duration(seconds: 3),
+    vsync: this,
+  );
 
-    _controller = AnimationController(
-      duration: const Duration(seconds: 1),
-      vsync: this,
-    );
+  _circleExpansion = Tween<double>(begin: 0.0, end: 2.0).animate(
+    CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+  );
 
-    _fadeInAnimation = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeIn,
-    ));
+  _controller.forward();
 
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.elasticOut,
-    ));
+  Timer(const Duration(seconds: 5), () async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
 
-    _controller.forward();
+     final volunteerDoc = await FirebaseFirestore.instance
+    .collection('volunteers')
+    .doc(user.uid)
+    .get();
 
-    Timer(const Duration(seconds: 4), () {
-      // Check Firebase auth session
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        Navigator.pushReplacementNamed(context, '/home'); // or your main page
-      } else {
-        Navigator.pushReplacementNamed(context, '/login');
-      }
-    });
+if (volunteerDoc.exists) {
+  final status = volunteerDoc.data()?['status'];
+  if (status == 'approved') {
+    await FirebaseMessaging.instance.subscribeToTopic("volunteers");
+    print("✅ Subscribed to volunteers topic");
   }
+  // No else -> don't unsubscribe here blindly
+}
+
+      if (userDoc.exists && userDoc.data()!['role'] == 'admin') {
+        Navigator.pushReplacementNamed(context, '/admin_home');
+      } else {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    } else {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  });
+}
+
 
   @override
   void dispose() {
@@ -63,56 +77,54 @@ class _LaunchPageState extends State<LaunchPage>
     return Scaffold(
       body: Stack(
         children: [
-          // Background Animation
+          // Background with purple fill expanding circle from center
           Positioned.fill(
-            child: Lottie.asset(
-              'assets/animations/background.json',
-              fit: BoxFit.cover,
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: CircleExpandPainter(
+                    color: Color(0xFF6A1B9A),
+                    radiusScale: _circleExpansion.value,
+                  ),
+                );
+              },
             ),
           ),
+         
 
-          // Foreground Content
+          // Centered Logo, Slogan, and Loader
           Center(
-            child: FadeTransition(
-              opacity: _fadeInAnimation,
-              child: ScaleTransition(
-                scale: _scaleAnimation,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 20),
-                    const Text(
-                      'ResQ 360',
-                      style: TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Bebas',
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      '"Empowering communities, saving lives."',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontStyle: FontStyle.italic,
-                        fontFamily: 'Bebas',
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-                    Lottie.asset(
-                      'assets/animations/loader.json',
-                      width: 100,
-                      height: 100,
-                    ),
-                  ],
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/app_icon.png',
+                  width: 100,
+                  height: 100,
                 ),
-              ),
+                const SizedBox(height: 20),
+                const Text(
+                  '"Empowering communities, saving lives."',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontStyle: FontStyle.italic,
+                    fontFamily: 'Bebas',
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 30),
+                Lottie.asset(
+                  'assets/animations/loader4.json',
+                  width: 100,
+                  height: 100,
+                ),
+              ],
             ),
           ),
 
+          // Footer
           Positioned(
             bottom: 20,
             left: 0,
@@ -123,7 +135,7 @@ class _LaunchPageState extends State<LaunchPage>
                 style: TextStyle(
                   fontFamily: 'Bebas',
                   fontSize: 16,
-                  color: const Color.fromARGB(255, 93, 41, 142),
+                  color: const Color.fromARGB(255, 255, 255, 255),
                 ),
               ),
             ),
@@ -132,4 +144,22 @@ class _LaunchPageState extends State<LaunchPage>
       ),
     );
   }
+}
+
+class CircleExpandPainter extends CustomPainter {
+  final Color color;
+  final double radiusScale;
+
+  CircleExpandPainter({required this.color, required this.radiusScale});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width * radiusScale;
+    canvas.drawCircle(center, radius, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

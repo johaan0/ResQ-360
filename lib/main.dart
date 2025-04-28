@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_application_1/User/about.dart';
 import 'package:flutter_application_1/User/home.dart';
+import 'package:flutter_application_1/admin/admin.dart';
 import 'package:flutter_application_1/launch.dart';
 import 'package:flutter_application_1/User/notifications.dart';
 import 'package:flutter_application_1/User/sos.dart';
@@ -36,7 +37,7 @@ void main() async {
   print('User granted permission: ${settings.authorizationStatus}');
 
   // Optional: subscribe to a topic
-  await messaging.subscribeToTopic('volunteers');
+ //await messaging.subscribeToTopic('volunteers');
 
   // Background notification tap handling
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -74,7 +75,8 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => ProfilePage(),
         '/about': (context) => AboutPage(),
         '/location': (context) => UserLocationMap(),
-        '/notifications':(context)=>NotificationsPage()
+        '/notifications':(context)=>NotificationsPage(),
+        '/admin_home':(context)=>AdminPage(),
       },
     );
   }

@@ -38,6 +38,8 @@ class _NearbyPoliceStationsPageState extends State<NearbyPoliceStationsPage> {
                   'name': place['name'],
                   'address': place['vicinity'],
                   'phone': place['formatted_phone_number'], // Only if available
+                  'lat': place['geometry']['location']['lat'],
+                  'lng': place['geometry']['location']['lng'],
                 })
             .toList();
         _loading = false;
@@ -61,10 +63,21 @@ class _NearbyPoliceStationsPageState extends State<NearbyPoliceStationsPage> {
     }
   }
 
+  void _openLocation(double lat, double lng) async {
+  final Uri url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+  if (await canLaunchUrl(url)) {
+    await launchUrl(url, mode: LaunchMode.externalApplication);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Cannot open Maps")),
+    );
+  }
+}
+
+
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      //title: "Nearby Police Stations",
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -83,6 +96,8 @@ class _NearbyPoliceStationsPageState extends State<NearbyPoliceStationsPage> {
                   final name = station['name'] ?? 'Police Station';
                   final address = station['address'] ?? 'Address not available';
                   final phone = station['phone'];
+                  final lat = station['lat'];
+                  final lng = station['lng'];
 
                   return Card(
                     shape: RoundedRectangleBorder(
@@ -98,12 +113,21 @@ class _NearbyPoliceStationsPageState extends State<NearbyPoliceStationsPage> {
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                       ),
                       subtitle: Text(address),
-                      trailing: phone != null
-                          ? IconButton(
+                      trailing: Wrap(
+                        spacing: 8,
+                        children: [
+                          if (phone != null)
+                            IconButton(
                               icon: Icon(Icons.call, color: Colors.green),
                               onPressed: () => _callNumber(phone),
-                            )
-                          : null,
+                            ),
+                          if (lat != null && lng != null)
+                            IconButton(
+                              icon: Icon(Icons.location_on, color: Colors.red),
+                              onPressed: () => _openLocation(lat, lng),
+                            ),
+                        ],
+                      ),
                     ),
                   );
                 },

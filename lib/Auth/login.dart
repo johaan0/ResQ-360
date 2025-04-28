@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_1/Auth/forgot_password_page.dart';
@@ -75,18 +76,21 @@ void _login() async {
         .doc(uid) // Fetch by UID
         .get();
 
+    // 🔔 Subscribe if approved volunteer
+    await _subscribeIfApprovedVolunteer(uid);
+
     if (userDoc.exists) {
       String role = userDoc.get("role");
 
       if (role == "admin") {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => AdminPage()), 
+          MaterialPageRoute(builder: (context) => AdminPage()),
         );
       } else {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomePage()), 
+          MaterialPageRoute(builder: (context) => HomePage()),
         );
       }
     } else {
@@ -96,6 +100,18 @@ void _login() async {
     _showErrorMessage("Invalid email or password.");
   }
 }
+
+Future<void> _subscribeIfApprovedVolunteer(String uid) async {
+  final doc = await FirebaseFirestore.instance
+      .collection('volunteers')
+      .doc(uid)
+      .get();
+
+  if (doc.exists && doc.data()?['status'] == 'approved') {
+    await FirebaseMessaging.instance.subscribeToTopic("volunteers");
+  }
+}
+
 
 void _showErrorMessage(String message) {
   ScaffoldMessenger.of(context).showSnackBar(

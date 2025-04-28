@@ -48,11 +48,12 @@ dependencies:
   http: ^1.3.0
   path: ^1.8.3 
   file_picker: ^9.2.1
-  url_launcher: ^6.1.14
+  url_launcher: ^6.2.1
   flutter_pdfview: ^1.2.7
   googleapis: ^14.0.0
   googleapis_auth: ^2.0.0
   flutter_google_maps_webservices: ^1.1.1
+  share_plus: ^7.2.1
 
    
   
@@ -115,6 +116,9 @@ flutter:
       - assets/animations/reject.json
       - assets/animations/reject1.json
       - assets/animations/pending.json
+      - assets/animations/loader2.json
+      - assets/animations/loader3.json
+      - assets/animations/loader4.json
 
 flutter_launcher_icons:
   android: true

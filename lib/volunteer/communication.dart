@@ -53,18 +53,26 @@ class _CommunicationPageState extends State<CommunicationPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final data = widget.requestData;
-    final location = data['location'] as Map<String, dynamic>;
-    final lat = location['latitude'];
-    final lon = location['longitude'];
+Widget build(BuildContext context) {
+  final data = widget.requestData;
 
-    // Dummy volunteer location (you should replace this with actual coordinates)
-    final volunteerLat = lat + 0.002;
-    final volunteerLon = lon + 0.002;
+  // Check if 'location' is not null and has latitude and longitude
+  final location = data['location'];
+  
+  if (location == null || location['latitude'] == null || location['longitude'] == null) {
+   // return const Center(child: Text('Location data is not available'));
+  }
+
+  final lat = location['latitude'];
+  final lon = location['longitude'];
+
+  // Dummy volunteer location (you should replace this with actual coordinates)
+  final volunteerLat = lat + 0.002; // Simulating volunteer location
+  final volunteerLon = lon + 0.002;
 
     return Scaffold(
       appBar: AppBar(
+        leading: const BackButton(color: Colors.white),
         title: const Text(
           'Assistance Info',
           style: TextStyle(

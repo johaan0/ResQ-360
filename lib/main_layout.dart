@@ -15,6 +15,7 @@ class _MainLayoutState extends State<MainLayout> {
   int _selectedIndex = 0;
   String userName = "Loading...";
   String userEmail = "Loading...";
+  bool isVolunteerApproved = false; // New variable
 
   @override
   void initState() {
@@ -23,26 +24,53 @@ class _MainLayoutState extends State<MainLayout> {
   }
 
   void _fetchUserData() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      try {
-        DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-        if (userDoc.exists) {
-          setState(() {
-            userName = userDoc.get('name') ?? "Unknown User";
-            userEmail = userDoc.get('email') ?? "No Email";
-          });
-          print("Fetched User: $userName, $userEmail"); // Debugging
+  User? user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (userDoc.exists) {
+        String fetchedName = userDoc.get('name') ?? "Unknown User";
+        String fetchedEmail = userDoc.get('email') ?? "No Email";
+
+        setState(() {
+          userName = fetchedName;
+          userEmail = fetchedEmail;
+        });
+
+        print("Fetched User: $userName, $userEmail"); // Debugging
+
+        // Now search volunteers collection where 'name' == fetchedName
+        QuerySnapshot volunteerQuery = await FirebaseFirestore.instance
+            .collection('volunteers')
+            .where('name', isEqualTo: fetchedName)
+            .limit(1)
+            .get();
+
+        if (volunteerQuery.docs.isNotEmpty) {
+          DocumentSnapshot volunteerDoc = volunteerQuery.docs.first;
+          String status = volunteerDoc.get('status') ?? '';
+          if (status.toLowerCase() == 'approved') {
+            setState(() {
+              isVolunteerApproved = true;
+            });
+            print("Volunteer approved ✅");
+          } else {
+            print("Volunteer not approved ❌");
+          }
         } else {
-          print("User document does not exist");
+          print("No volunteer record found");
         }
-      } catch (e) {
-        print("Error fetching user data: $e");
+      } else {
+        print("User document does not exist");
       }
-    } else {
-      print("No user logged in");
+    } catch (e) {
+      print("Error fetching user data: $e");
     }
+  } else {
+    print("No user logged in");
   }
+}
+
 
   void _onItemTapped(int index) {
     setState(() {
@@ -66,10 +94,10 @@ class _MainLayoutState extends State<MainLayout> {
     Navigator.pushReplacementNamed(context, '/home');
   }
 
- void _logout(BuildContext context) async {
-  await FirebaseAuth.instance.signOut(); // Sign out the user
-  Navigator.pushReplacementNamed(context, '/login'); // Navigate to login screen
-}
+  void _logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushReplacementNamed(context, '/login');
+  }
 
   void _navigateToSOS(BuildContext context) {
     Navigator.pushNamed(context, '/sos');
@@ -82,7 +110,6 @@ class _MainLayoutState extends State<MainLayout> {
   void _about(BuildContext context) {
     Navigator.pushNamed(context, '/about');
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -98,32 +125,32 @@ class _MainLayoutState extends State<MainLayout> {
             ),
           ),
           child: AppBar(
-  title: const Text(
-    "ResQ 360",
-    style: TextStyle(
-      color: Colors.white,
-      fontWeight: FontWeight.bold,
-    ),
-  ),
-  backgroundColor: Colors.transparent,
-  elevation: 0,
-  iconTheme: const IconThemeData(
-    color: Color(0xFFFFFFFF), // Change this to any color you like
-  ),
-  actions: [
-    IconButton(
-  icon: const Icon(Icons.notifications, color: Colors.white),
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const NotificationsPage()),
-    );
-  },
-),
-
-  ],
-),
-
+            title: const Text(
+              "ResQ 360",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            iconTheme: const IconThemeData(
+              color: Color(0xFFFFFFFF),
+            ),
+            actions: isVolunteerApproved
+                ? [
+                    IconButton(
+                      icon: const Icon(Icons.notifications, color: Colors.white),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const NotificationsPage()),
+                        );
+                      },
+                    ),
+                  ]
+                : [],
+          ),
         ),
       ),
       drawer: Drawer(
@@ -158,7 +185,7 @@ class _MainLayoutState extends State<MainLayout> {
               onTap: () {
                 Navigator.pop(context);
                 _home(context);
-              }
+              },
             ),
             ListTile(
               leading: const Icon(Icons.sos),
@@ -192,7 +219,6 @@ class _MainLayoutState extends State<MainLayout> {
                 _about(context);
               },
             ),
-            
           ],
         ),
       ),
