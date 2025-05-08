@@ -11,7 +11,7 @@ class NearbyHospitalsPage extends StatefulWidget {
 }
 
 class _NearbyHospitalsPageState extends State<NearbyHospitalsPage> {
-  final String apiKey = 'AIzaSyC1tSvmENNjKFJrvaSTjUtQER9r1vXr-NM';
+  //final String apiKey = 'Your API Key';
   List<Map<String, dynamic>> _hospitals = [];
   bool _loading = true;
 

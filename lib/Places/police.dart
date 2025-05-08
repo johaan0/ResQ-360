@@ -11,7 +11,7 @@ class NearbyPoliceStationsPage extends StatefulWidget {
 }
 
 class _NearbyPoliceStationsPageState extends State<NearbyPoliceStationsPage> {
-  final String apiKey = 'AIzaSyC1tSvmENNjKFJrvaSTjUtQER9r1vXr-NM';
+  //final String apiKey = 'your API key';
   List<Map<String, dynamic>> _stations = [];
   bool _loading = true;
 

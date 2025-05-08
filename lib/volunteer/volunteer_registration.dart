@@ -372,7 +372,7 @@ class _VolunteerRegistrationPageState extends State<VolunteerRegistrationPage> {
                             onPressed: _pickKycDocument,
                             icon: const Icon(Icons.upload_file,
                                 color: Colors.black),
-                            label: const Text("Upload KYC Document with Photo",
+                            label: const Text("Upload KYC Document with Photo and DOB",
                                 style: TextStyle(color: Colors.black)),
                           ),
                           if (kycFile != null)
